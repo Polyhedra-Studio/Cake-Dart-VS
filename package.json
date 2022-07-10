@@ -1,0 +1,40 @@
+{
+	"name": "cake-vs-tester",
+	"displayName": "cake-vs-tester",
+	"description": "Test API interface for VS Code for Dart Cake",
+	"version": "0.0.1",
+	"publisher": "polyhedra",
+	"private": true,
+	"license": "none",
+	"repository": "http://butterfree.lan:30120/dart/cake-vs",
+	"enabledApiProposals": [
+		"testCoverage"
+	],
+	"engines": {
+		"vscode": "^1.68.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"workspaceContains:*.cake.dart"
+	],
+	"main": "./out/extension.js",
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"lint": "eslint . --ext .ts,.tsx",
+		"watch": "tsc -watch -p ./",
+		"download-api": "vscode-dts dev",
+		"postinstall": "npm run download-api"
+	},
+	"devDependencies": {
+		"@types/node": "^16.11.7",
+		"@typescript-eslint/eslint-plugin": "^5.30.0",
+		"@typescript-eslint/parser": "^5.30.0",
+		"eslint": "^8.13.0",
+		"typescript": "^4.7.2",
+		"vscode-dts": "^0.3.3"
+	}
+}
+ 

@@ -6,12 +6,12 @@
 	"publisher": "polyhedra",
 	"private": true,
 	"license": "none",
-	"repository": "http://butterfree.lan:30120/dart/cake-vs",
+	"repository": "http://butterfree.lan:30120/dart/cake-vs.git",
 	"enabledApiProposals": [
 		"testCoverage"
 	],
 	"engines": {
-		"vscode": "^1.68.0"
+		"vscode": "^1.68.1"
 	},
 	"categories": [
 		"Other"
@@ -25,7 +25,7 @@
 		"compile": "tsc -p ./",
 		"lint": "eslint . --ext .ts,.tsx",
 		"watch": "tsc -watch -p ./",
-		"download-api": "vscode-dts dev",
+		"download-api": "vscode-dts dev && vscode-dts main",
 		"postinstall": "npm run download-api"
 	},
 	"devDependencies": {

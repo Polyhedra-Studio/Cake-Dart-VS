@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
-import { getContentFromFilesystem, MarkdownTestData, TestCase, testData, TestFile } from './testTree';
+import { getContentFromFilesystem, CakeTestCase, testData, TestFile } from './testTree';
 
 export async function activate(context: vscode.ExtensionContext) {
-	const ctrl = vscode.tests.createTestController('mathTestController', 'Markdown Math');
+	const ctrl = vscode.tests.createTestController('cakeDartTester', 'Cake Dart Tester');
 	context.subscriptions.push(ctrl);
 
 	const runHandler = (request: vscode.TestRunRequest, cancellation: vscode.CancellationToken) => {
-		const queue: { test: vscode.TestItem; data: TestCase }[] = [];
+		const queue: { test: vscode.TestItem; data: CakeTestCase }[] = [];
 		const run = ctrl.createTestRun(request);
-		// map of file uris to statments on each line:
+		// map of file uris to statements on each line:
 		const coveredLines = new Map</* file uri */ string, (vscode.StatementCoverage | undefined)[]>();
 
 		const discoverTests = async (tests: Iterable<vscode.TestItem>) => {
@@ -17,8 +17,8 @@ export async function activate(context: vscode.ExtensionContext) {
 					continue;
 				}
 
-				const data = testData.get(test);
-				if (data instanceof TestCase) {
+				const data: any = testData.get(test);
+				if (data && (data.isRunnable)) {
 					run.enqueued(test);
 					queue.push({ test, data });
 				} else {
@@ -156,7 +156,7 @@ function getWorkspaceTestPatterns() {
 
 	return vscode.workspace.workspaceFolders.map(workspaceFolder => ({
 		workspaceFolder,
-		pattern: new vscode.RelativePattern(workspaceFolder, '**/*.md'),
+		pattern: new vscode.RelativePattern(workspaceFolder, '**/*.cake.dart'),
 	}));
 }
 

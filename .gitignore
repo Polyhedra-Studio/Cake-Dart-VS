@@ -5,3 +5,7 @@ node_modules
 
 /vscode.d.ts
 /vscode.proposed.*.d.ts
+
+sample/.dart_tool/
+sample/.packages
+sample/pubspec.lock

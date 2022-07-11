@@ -1,14 +1,13 @@
 import { TextDecoder } from 'util';
 import * as vscode from 'vscode';
-import { parseMarkdown } from './parser';
+import { parseCakeTest } from './cake-parser';
+import { exec } from 'node:child_process';
 
 const textDecoder = new TextDecoder('utf-8');
 
-export type MarkdownTestData = TestFile | TestHeading | TestCase;
+export type CakeTestData = TestFile | CakeTestRunner | CakeGroup | CakeTestCase;
 
-export const testData = new WeakMap<vscode.TestItem, MarkdownTestData>();
-
-let generationCounter = 0;
+export const testData = new WeakMap<vscode.TestItem, CakeTestData>();
 
 export const getContentFromFilesystem = async (uri: vscode.Uri) => {
 	try {
@@ -39,7 +38,6 @@ export class TestFile {
 	 */
 	public updateFromContents(controller: vscode.TestController, content: string, item: vscode.TestItem) {
 		const ancestors = [{ item, children: [] as vscode.TestItem[] }];
-		const thisGeneration = generationCounter++;
 		this.didResolve = true;
 
 		const ascend = (depth: number) => {
@@ -49,12 +47,11 @@ export class TestFile {
 			}
 		};
 
-		parseMarkdown(content, {
-			onTest: (range, a, operator, b, expected) => {
+		parseCakeTest(content, {
+			onTest: (range, testName) => {
 				const parent = ancestors[ancestors.length - 1];
-				const data = new TestCase(a, operator as Operator, b, expected, thisGeneration);
+				const data = new CakeTestCase(testName);
 				const id = `${item.uri}/${data.getLabel()}`;
-
 
 				const tcase = controller.createTestItem(id, data.getLabel(), item.uri);
 				testData.set(tcase, data);
@@ -62,67 +59,124 @@ export class TestFile {
 				parent.children.push(tcase);
 			},
 
-			onHeading: (range, name, depth) => {
-				ascend(depth);
+			onGroup: (range, name, depth) => {
+				ascend(1);
 				const parent = ancestors[ancestors.length - 1];
 				const id = `${item.uri}/${name}`;
 
 				const thead = controller.createTestItem(id, name, item.uri);
 				thead.range = range;
-				testData.set(thead, new TestHeading(thisGeneration));
+				testData.set(thead, new CakeGroup(name));
 				parent.children.push(thead);
 				ancestors.push({ item: thead, children: [] });
 			},
+			
+			onTestRunner: (range, name) => {
+				const parent = ancestors[0];
+				const id =  `${item.uri}/${name}`;
+
+				const thead = controller.createTestItem(id, name, item.uri);
+				thead.range = range;
+				testData.set(thead, new CakeTestRunner(name));
+				parent.children.push(thead);
+				ancestors.push({ item: thead, children: [] });
+			}
 		});
 
 		ascend(0); // finish and assign children for all remaining items
 	}
 }
 
-export class TestHeading {
-	constructor(public generation: number) { }
-}
+export class CakeTestCase {
+	isRunnable:boolean = true;
 
-type Operator = '+' | '-' | '*' | '/';
-
-export class TestCase {
 	constructor(
-		private readonly a: number,
-		private readonly operator: Operator,
-		private readonly b: number,
-		private readonly expected: number,
-		public generation: number
-	) { }
+		private readonly name: string,
+	) {}
 
 	getLabel() {
-		return `${this.a} ${this.operator} ${this.b} = ${this.expected}`;
+		return this.name;
 	}
 
 	async run(item: vscode.TestItem, options: vscode.TestRun): Promise<void> {
-		const start = Date.now();
-		await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-		const actual = this.evaluate();
-		const duration = Date.now() - start;
+		const cmd = `dart run --define=testSearchFor=${this.name} ${item.uri!.path}`;
+		const promise = new Promise<void>((resolve, reject) => {
+			exec(cmd, (error, stdout, stderr) => {
+				if (stderr) {
+					const message = new vscode.TestMessage(`Internal error\n${stderr}`);
+					message.location = new vscode.Location(item.uri!, item.range!);
+					options.failed(item, message);
+				}
+		
+				// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
+				if (stdout) {
+					// DEBUG - for testing this works, let's just pretend everything passes
+					options.passed(item);
+				}
+	
+				resolve();
+			});
+		});
+		return promise;
+	}
+}
 
-		if (actual === this.expected) {
-			options.passed(item, duration);
-		} else {
-			const message = vscode.TestMessage.diff(`Expected ${item.label}`, String(this.expected), String(actual));
-			message.location = new vscode.Location(item.uri!, item.range!);
-			options.failed(item, message, duration);
-		}
+export class CakeGroup {
+	isRunnable:boolean = false;
+
+	constructor(
+		private readonly name: string,
+	) {}
+
+	getLabel() {
+		return this.name;
 	}
 
-	private evaluate() {
-		switch (this.operator) {
-			case '-':
-				return this.a - this.b;
-			case '+':
-				return this.a + this.b;
-			case '/':
-				return Math.floor(this.a / this.b);
-			case '*':
-				return this.a * this.b;
-		}
+	async run(item: vscode.TestItem, options: vscode.TestRun): Promise<void> {
+		exec(`dart run --define=groupSearchFor=${item.uri!.path}`, (error, stdout, stderr) => {
+			if (stderr) {
+				const message = new vscode.TestMessage('Internal error');
+				message.location = new vscode.Location(item.uri!, item.range!);
+				options.failed(item, message);
+				return;
+			}
+	
+			// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
+			if (stdout) {
+				// DEBUG - for testing this works, let's just pretend everything passes
+				options.passed(item);
+			}
+		});
+
+	}
+}
+
+export class CakeTestRunner {
+	isRunnable:boolean = false;
+
+	constructor(
+		private readonly name: string,
+	) {}
+
+	getLabel() {
+		return this.name;
+	}
+
+	async run(item: vscode.TestItem, options: vscode.TestRun): Promise<void> {
+		exec(`dart run --define=testRunnerSearchFor=${this.name} ${item.uri!.path}`, (error, stdout, stderr) => {
+			if (stderr) {
+				const message = new vscode.TestMessage('Internal error');
+				message.location = new vscode.Location(item.uri!, item.range!);
+				options.failed(item, message);
+				return;
+			}
+	
+			// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
+			if (stdout) {
+				// DEBUG - for testing this works, let's just pretend everything passes
+				options.passed(item);
+			}
+		});
+
 	}
 }

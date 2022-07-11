@@ -1,0 +1,12 @@
+name: cake_vs_sample_tests
+description: The tiniest little unit tester, now with the tiniest little tests
+version: 1.0.0
+publish_to: none # no need to publish this anywhere
+
+environment:
+  sdk: '>=2.16.2 <3.0.0'
+
+dependencies:
+  cake:
+    version: ^3.3.1
+    hosted: http://butterfree.lan:30117

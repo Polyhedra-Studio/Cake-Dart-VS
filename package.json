@@ -1,6 +1,6 @@
 {
-	"name": "cake-vs-tester",
-	"displayName": "cake-vs-tester",
+	"name": "cake-dart-tester",
+	"displayName": "cake-dart-tester",
 	"description": "Test API interface for VS Code for Dart Cake",
 	"version": "0.0.1",
 	"publisher": "polyhedra",

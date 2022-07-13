@@ -1,6 +1,6 @@
 import { TextDecoder } from 'util';
 import * as vscode from 'vscode';
-import { parseCakeTest } from './cake-parser';
+import { parseCakeTest, parseResults } from './cake-parser';
 import { exec } from 'node:child_process';
 
 const textDecoder = new TextDecoder('utf-8');
@@ -98,6 +98,14 @@ export class CakeTestCase {
 		return this.name;
 	}
 
+	getTestName() {
+		let name = this.name;
+		if (this.name[0] == "'" && this.name[this.name.length - 1] == "'") {
+			name = this.name.slice(1, this.name.length - 1);
+		}
+		return name;
+	}
+
 	async run(item: vscode.TestItem, options: vscode.TestRun): Promise<void> {
 		const cmd = `dart run --define=testSearchFor=${this.name} ${item.uri!.path}`;
 		const promise = new Promise<void>((resolve, reject) => {
@@ -110,8 +118,20 @@ export class CakeTestCase {
 		
 				// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
 				if (stdout) {
-					// DEBUG - for testing this works, let's just pretend everything passes
-					options.passed(item);
+					if (stdout.startsWith('[32m')) {
+						options.passed(item);
+					}
+					if (stdout.startsWith('[31m')) {
+						let errorMessage = parseResults(stdout, this.getTestName());
+						if (!errorMessage) {
+							errorMessage = stdout;
+						}
+						const message = new vscode.TestMessage(errorMessage);
+						options.failed(item, message);
+					}
+					if (stdout.startsWith('[90m')) {
+						options.skipped(item);
+					}
 				}
 	
 				resolve();
@@ -122,7 +142,7 @@ export class CakeTestCase {
 }
 
 export class CakeGroup {
-	isRunnable:boolean = false;
+	isRunnable:boolean = true;
 
 	constructor(
 		private readonly name: string,
@@ -133,26 +153,42 @@ export class CakeGroup {
 	}
 
 	async run(item: vscode.TestItem, options: vscode.TestRun): Promise<void> {
-		exec(`dart run --define=groupSearchFor=${item.uri!.path}`, (error, stdout, stderr) => {
-			if (stderr) {
-				const message = new vscode.TestMessage('Internal error');
-				message.location = new vscode.Location(item.uri!, item.range!);
-				options.failed(item, message);
-				return;
-			}
+		const cmd = `dart run --define=groupSearchFor=${item.uri!.path}`;
+		const promise = new Promise<void>((resolve, reject) => {
+			exec(cmd, (error, stdout, stderr) => {
+				if (stderr) {
+					const message = new vscode.TestMessage(`Internal error\n${stderr}`);
+					message.location = new vscode.Location(item.uri!, item.range!);
+					options.failed(item, message);
+				}
+		
+				// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
+				if (stdout) {
+					if (stdout.startsWith('[32m')) {
+						options.passed(item);
+						item.children.forEach(child => options.passed(child));
+					}
+					if (stdout.startsWith('[31m')) {
+						const message = new vscode.TestMessage(stdout);
+						options.failed(item, message);
+						// Ideally this would actually pick out which ones passed/failed but that is for a later time
+						item.children.forEach(child => options.skipped(child));
+					}
+					if (stdout.startsWith('[90m')) {
+						options.skipped(item);
+						item.children.forEach(child => options.skipped(child));
+					}
+				}
 	
-			// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
-			if (stdout) {
-				// DEBUG - for testing this works, let's just pretend everything passes
-				options.passed(item);
-			}
+				resolve();
+			});
 		});
-
+		return promise;
 	}
 }
 
 export class CakeTestRunner {
-	isRunnable:boolean = false;
+	isRunnable:boolean = true;
 
 	constructor(
 		private readonly name: string,
@@ -163,20 +199,36 @@ export class CakeTestRunner {
 	}
 
 	async run(item: vscode.TestItem, options: vscode.TestRun): Promise<void> {
-		exec(`dart run --define=testRunnerSearchFor=${this.name} ${item.uri!.path}`, (error, stdout, stderr) => {
-			if (stderr) {
-				const message = new vscode.TestMessage('Internal error');
-				message.location = new vscode.Location(item.uri!, item.range!);
-				options.failed(item, message);
-				return;
-			}
+		const cmd = `dart run --define=testRunnerSearchFor=${this.name} ${item.uri!.path}`;
+		const promise = new Promise<void>((resolve, reject) => {
+			exec(cmd, (error, stdout, stderr) => {
+				if (stderr) {
+					const message = new vscode.TestMessage(`Internal error\n${stderr}`);
+					message.location = new vscode.Location(item.uri!, item.range!);
+					options.failed(item, message);
+				}
+		
+				// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
+				if (stdout) {
+					if (stdout.startsWith('[32m')) {
+						options.passed(item);
+						item.children.forEach(child => options.passed(child));
+					}
+					if (stdout.startsWith('[31m')) {
+						const message = new vscode.TestMessage(stdout);
+						options.failed(item, message);
+						// Ideally this would actually pick out which ones passed/failed but that is for a later time
+						item.children.forEach(child => options.skipped(child));
+					}
+					if (stdout.startsWith('[90m')) {
+						options.skipped(item);
+						item.children.forEach(child => options.skipped(child));
+					}
+				}
 	
-			// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
-			if (stdout) {
-				// DEBUG - for testing this works, let's just pretend everything passes
-				options.passed(item);
-			}
+				resolve();
+			});
 		});
-
+		return promise;
 	}
 }

@@ -25,8 +25,6 @@ export async function activate(context: vscode.ExtensionContext) {
 					if (data instanceof TestFile && !data.didResolve) {
 						await data.updateFromDisk(ctrl, test);
 					}
-
-					await discoverTests(gatherTestItems(test.children));
 				}
 
 				if (test.uri && !coveredLines.has(test.uri.toString())) {

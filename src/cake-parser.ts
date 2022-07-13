@@ -38,3 +38,24 @@ export const parseCakeTest = (text: string, events: {
 		}
 	}
 };
+
+export const parseResults = (text: string, testName: string): string => {
+	const lines = text.split('\n');
+	let error = '';
+	let i = 0;
+	let errorIndex = -1;
+	while(i < lines.length && !error) {
+		const line = lines[i];
+		if (errorIndex >= 0) {
+			// Trim error down
+			const lineError = line.replace(RegExp(/^(.*)`-\s+(.*)(.*)/), '$2');
+			error = lineError;
+		} else {
+			if (line.includes(testName)) {
+				errorIndex = i;
+			}
+		}
+		i++;
+	}
+	return error;
+}

@@ -3,7 +3,7 @@ import 'package:cake/cake.dart';
 void main(List<String> arguments) async {
   TestRunner('Simple Test with no groups', [
     // Generic Constructor
-    Test<bool>('True is true - shorthand', expected: true, actual: true),
+    Test<bool>('True is true - shorthand', expected: true, actual: false),
     Test<bool>('True is true - assertion',
         assertions: ((context) => [
               Expect(ExpectType.equals, expected: true, actual: true),

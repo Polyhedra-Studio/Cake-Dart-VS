@@ -51,7 +51,7 @@ export const parseResults = (text: string, testName: string): string => {
 			const lineError = line.replace(RegExp(/^(.*)`-\s+(.*)(.*)/), '$2');
 			error = lineError;
 		} else {
-			if (line.includes(testName)) {
+			if (line.includes(testName) && line.includes('[31m')) {
 				errorIndex = i;
 			}
 		}

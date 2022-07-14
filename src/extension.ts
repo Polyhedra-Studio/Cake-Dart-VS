@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { getContentFromFilesystem, CakeTestCase, testData, TestFile } from './testTree';
+import { CakeTestCase, testData, TestFile } from './testTree';
 
 export async function activate(context: vscode.ExtensionContext) {
 	const ctrl = vscode.tests.createTestController('cakeDartTester', 'Cake Dart Tester');
@@ -69,7 +69,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		if (!e.uri.path.endsWith('.md')) {
+		if (!e.uri.path.endsWith('.cake.dart')) {
 			return;
 		}
 

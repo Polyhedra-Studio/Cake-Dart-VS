@@ -5,7 +5,7 @@ import { exec } from 'node:child_process';
 
 const textDecoder = new TextDecoder('utf-8');
 
-export type CakeTestData = TestFile | CakeTestRunner | CakeGroup | CakeTestCase;
+export type CakeTestData = TestFile | CakeTestItem;
 
 export const testData = new WeakMap<vscode.TestItem, CakeTestData>();
 
@@ -47,41 +47,45 @@ export class TestFile {
 			}
 		};
 
+		const createObject = (
+			range: vscode.Range, 
+			name: string, 
+			ctor: new (name: string) => CakeTestItem, 
+			parent: { item: vscode.TestItem, children: vscode.TestItem[]},
+		): vscode.TestItem => {
+			let id = `${parent.item.id}/${name}`;
+			// Make sure that the id is unique, even if the user makes the same name for tests
+			const duplicateNames = parent.children.filter(child => child.label == name);
+			if (duplicateNames.length > 0) {
+				id += `(${duplicateNames.length})`;
+			}
+
+			const data = new ctor(name);
+			const thead = controller.createTestItem(id, data.getLabel(), item.uri);
+			thead.range = range;
+			testData.set(thead, data);
+			parent.children.push(thead);
+			return thead;
+		}
+
 		parseCakeTest(content, {
-			onTest: (range, testName) => {
+			onTest: (range, name) => {
 				const parent = ancestors[ancestors.length - 1];
-				const data = new CakeTestCase(testName);
-				const id = `${item.uri}/${data.getLabel()}`;
-
-				const tcase = controller.createTestItem(id, data.getLabel(), item.uri);
-				testData.set(tcase, data);
-				tcase.range = range;
-				parent.children.push(tcase);
+				createObject(range, name, CakeTestCase, parent);
 			},
-
 			onGroup: (range, name) => {
-				ascend(1);
 				const parent = ancestors[ancestors.length - 1];
-				const id = `${item.uri}/${name}`;
-				const data = new CakeGroup(name);
-
-				const thead = controller.createTestItem(id, data.getLabel(), item.uri);
-				thead.range = range;
-				testData.set(thead, data);
-				parent.children.push(thead);
+				const thead = createObject(range, name, CakeGroup, parent);
 				ancestors.push({ item: thead, children: [] });
 			},
-			
 			onTestRunner: (range, name) => {
 				const parent = ancestors[0];
-				const id =  `${item.uri}/${name}`;
-				const data = new CakeTestRunner(name);
-
-				const thead = controller.createTestItem(id, data.getLabel(), item.uri);
-				thead.range = range;
-				testData.set(thead, data);
-				parent.children.push(thead);
+				const thead = createObject(range, name, CakeTestRunner, parent);
 				ancestors.push({ item: thead, children: [] });
+			},
+			onAscend: () => {
+				const finished = ancestors.pop()!;
+				finished.item.children.replace(finished.children);
 			}
 		});
 
@@ -89,14 +93,15 @@ export class TestFile {
 	}
 }
 
-export class CakeTestCase {
-	isRunnable:boolean = true;
+abstract class CakeTestItem {
+	public isRunnable:boolean = true;
+	protected abstract propertyToSearchFor: string;
 
 	constructor(
-		private readonly name: string,
+		protected readonly name: string,
 	) {}
 
-	getLabel() {
+	public getLabel() {
 		let name = this.name;
 		if (this.name[0] == "'" && this.name[this.name.length - 1] == "'") {
 			name = this.name.slice(1, this.name.length - 1);
@@ -105,7 +110,7 @@ export class CakeTestCase {
 	}
 
 	async run(item: vscode.TestItem, options: vscode.TestRun): Promise<void> {
-		const cmd = `dart run --define=testSearchFor=${this.name} ${item.uri!.path}`;
+		const cmd = `dart run --define=${this.propertyToSearchFor}='${this.name}' ${item.uri!.path}`;
 		const promise = new Promise<void>((resolve, reject) => {
 			exec(cmd, (error, stdout, stderr) => {
 				if (stderr) {
@@ -116,19 +121,39 @@ export class CakeTestCase {
 		
 				// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
 				if (stdout) {
+					const passedRecursive = (recursiveParent: vscode.TestItem) => {
+						options.passed(recursiveParent);
+						recursiveParent.children.forEach(child => passedRecursive(child))
+					}
+					const failedRecursive = (recursiveParent: vscode.TestItem) => {
+						const message = new vscode.TestMessage(stdout);
+						message.location = new vscode.Location(recursiveParent.uri!, recursiveParent.range!);
+						options.failed(recursiveParent, message);
+
+						recursiveParent.children.forEach(child => {
+							const errorMessage = parseResults(stdout, child.label);
+							if (errorMessage) {
+								failedRecursive(child);
+							} else {
+								passedRecursive(child);
+							}
+						});
+					}
+					const neutralRecursive = (recursiveParent: vscode.TestItem) => {
+						options.skipped(recursiveParent);
+						recursiveParent.children.forEach(child => neutralRecursive(child))
+					}
+
 					if (stdout.startsWith('[32m')) {
-						options.passed(item);
+						passedRecursive(item);
 					}
+
 					if (stdout.startsWith('[31m')) {
-						let errorMessage = parseResults(stdout, item.label);
-						if (!errorMessage) {
-							errorMessage = stdout;
-						}
-						const message = new vscode.TestMessage(errorMessage);
-						options.failed(item, message);
+						failedRecursive(item);
 					}
+
 					if (stdout.startsWith('[90m')) {
-						options.skipped(item);
+						neutralRecursive(item);
 					}
 				}
 	
@@ -139,120 +164,14 @@ export class CakeTestCase {
 	}
 }
 
-export class CakeGroup {
-	isRunnable:boolean = true;
-
-	constructor(
-		private readonly name: string,
-	) {}
-
-	getLabel() {
-		let name = this.name;
-		if (this.name[0] == "'" && this.name[this.name.length - 1] == "'") {
-			name = this.name.slice(1, this.name.length - 1);
-		}
-		return name;
-	}
-
-	async run(item: vscode.TestItem, options: vscode.TestRun): Promise<void> {
-		const cmd = `dart run --define=groupSearchFor=${item.uri!.path}`;
-		const promise = new Promise<void>((resolve, reject) => {
-			exec(cmd, (error, stdout, stderr) => {
-				if (stderr) {
-					const message = new vscode.TestMessage(`Internal error\n${stderr}`);
-					message.location = new vscode.Location(item.uri!, item.range!);
-					options.failed(item, message);
-				}
-		
-				// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
-				if (stdout) {
-					if (stdout.startsWith('[32m')) {
-						options.passed(item);
-						item.children.forEach(child => options.passed(child));
-					}
-					if (stdout.startsWith('[31m')) {
-						const message = new vscode.TestMessage(stdout);
-						message.location = new vscode.Location(item.uri!, item.range!);
-						options.failed(item, message);
-						item.children.forEach(child => {
-							const errorMessage = parseResults(stdout, child.label);
-							if (errorMessage) {
-								const message = new vscode.TestMessage(errorMessage);
-								message.location = new vscode.Location(child.uri!, child.range!);
-								options.failed(child, message);
-							} else {
-								options.passed(child);
-							}
-						});
-					}
-					if (stdout.startsWith('[90m')) {
-						options.skipped(item);
-						item.children.forEach(child => options.skipped(child));
-					}
-				}
-	
-				resolve();
-			});
-		});
-		return promise;
-	}
+export class CakeTestCase extends CakeTestItem {
+	protected propertyToSearchFor: string = 'testSearchFor';
 }
 
-export class CakeTestRunner {
-	isRunnable:boolean = true;
+export class CakeGroup extends CakeTestItem {
+	protected propertyToSearchFor: string = 'groupSearchFor';
+}
 
-	constructor(
-		private readonly name: string,
-	) {}
-
-	getLabel() {
-		let name = this.name;
-		if (this.name[0] == "'" && this.name[this.name.length - 1] == "'") {
-			name = this.name.slice(1, this.name.length - 1);
-		}
-		return name;
-	}
-
-	async run(item: vscode.TestItem, options: vscode.TestRun): Promise<void> {
-		const cmd = `dart run --define=testRunnerSearchFor=${this.name} ${item.uri!.path}`;
-		const promise = new Promise<void>((resolve, reject) => {
-			exec(cmd, (error, stdout, stderr) => {
-				if (stderr) {
-					const message = new vscode.TestMessage(`Internal error\n${stderr}`);
-					message.location = new vscode.Location(item.uri!, item.range!);
-					options.failed(item, message);
-				}
-		
-				// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
-				if (stdout) {
-					if (stdout.startsWith('[32m')) {
-						options.passed(item);
-						item.children.forEach(child => options.passed(child));
-					}
-					if (stdout.startsWith('[31m')) {
-						const message = new vscode.TestMessage(stdout);
-						message.location = new vscode.Location(item.uri!, item.range!);
-						options.failed(item, message);
-						item.children.forEach(child => {
-							const errorMessage = parseResults(stdout, child.label);
-							if (errorMessage) {
-								const message = new vscode.TestMessage(errorMessage);
-								message.location = new vscode.Location(child.uri!, child.range!);
-								options.failed(child, message);
-							} else {
-								options.passed(child);
-							}
-						});
-					}
-					if (stdout.startsWith('[90m')) {
-						options.skipped(item);
-						item.children.forEach(child => options.skipped(child));
-					}
-				}
-	
-				resolve();
-			});
-		});
-		return promise;
-	}
+export class CakeTestRunner extends CakeTestItem {
+	protected propertyToSearchFor: string = 'testRunnerSearchFor';
 }

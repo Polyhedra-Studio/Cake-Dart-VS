@@ -59,14 +59,15 @@ export class TestFile {
 				parent.children.push(tcase);
 			},
 
-			onGroup: (range, name, depth) => {
+			onGroup: (range, name) => {
 				ascend(1);
 				const parent = ancestors[ancestors.length - 1];
 				const id = `${item.uri}/${name}`;
+				const data = new CakeGroup(name);
 
-				const thead = controller.createTestItem(id, name, item.uri);
+				const thead = controller.createTestItem(id, data.getLabel(), item.uri);
 				thead.range = range;
-				testData.set(thead, new CakeGroup(name));
+				testData.set(thead, data);
 				parent.children.push(thead);
 				ancestors.push({ item: thead, children: [] });
 			},
@@ -74,10 +75,11 @@ export class TestFile {
 			onTestRunner: (range, name) => {
 				const parent = ancestors[0];
 				const id =  `${item.uri}/${name}`;
+				const data = new CakeTestRunner(name);
 
-				const thead = controller.createTestItem(id, name, item.uri);
+				const thead = controller.createTestItem(id, data.getLabel(), item.uri);
 				thead.range = range;
-				testData.set(thead, new CakeTestRunner(name));
+				testData.set(thead, data);
 				parent.children.push(thead);
 				ancestors.push({ item: thead, children: [] });
 			}
@@ -95,10 +97,6 @@ export class CakeTestCase {
 	) {}
 
 	getLabel() {
-		return this.name;
-	}
-
-	getTestName() {
 		let name = this.name;
 		if (this.name[0] == "'" && this.name[this.name.length - 1] == "'") {
 			name = this.name.slice(1, this.name.length - 1);
@@ -122,7 +120,7 @@ export class CakeTestCase {
 						options.passed(item);
 					}
 					if (stdout.startsWith('[31m')) {
-						let errorMessage = parseResults(stdout, this.getTestName());
+						let errorMessage = parseResults(stdout, item.label);
 						if (!errorMessage) {
 							errorMessage = stdout;
 						}
@@ -149,7 +147,11 @@ export class CakeGroup {
 	) {}
 
 	getLabel() {
-		return this.name;
+		let name = this.name;
+		if (this.name[0] == "'" && this.name[this.name.length - 1] == "'") {
+			name = this.name.slice(1, this.name.length - 1);
+		}
+		return name;
 	}
 
 	async run(item: vscode.TestItem, options: vscode.TestRun): Promise<void> {
@@ -170,9 +172,18 @@ export class CakeGroup {
 					}
 					if (stdout.startsWith('[31m')) {
 						const message = new vscode.TestMessage(stdout);
+						message.location = new vscode.Location(item.uri!, item.range!);
 						options.failed(item, message);
-						// Ideally this would actually pick out which ones passed/failed but that is for a later time
-						item.children.forEach(child => options.skipped(child));
+						item.children.forEach(child => {
+							const errorMessage = parseResults(stdout, child.label);
+							if (errorMessage) {
+								const message = new vscode.TestMessage(errorMessage);
+								message.location = new vscode.Location(child.uri!, child.range!);
+								options.failed(child, message);
+							} else {
+								options.passed(child);
+							}
+						});
 					}
 					if (stdout.startsWith('[90m')) {
 						options.skipped(item);
@@ -195,7 +206,11 @@ export class CakeTestRunner {
 	) {}
 
 	getLabel() {
-		return this.name;
+		let name = this.name;
+		if (this.name[0] == "'" && this.name[this.name.length - 1] == "'") {
+			name = this.name.slice(1, this.name.length - 1);
+		}
+		return name;
 	}
 
 	async run(item: vscode.TestItem, options: vscode.TestRun): Promise<void> {
@@ -216,9 +231,18 @@ export class CakeTestRunner {
 					}
 					if (stdout.startsWith('[31m')) {
 						const message = new vscode.TestMessage(stdout);
+						message.location = new vscode.Location(item.uri!, item.range!);
 						options.failed(item, message);
-						// Ideally this would actually pick out which ones passed/failed but that is for a later time
-						item.children.forEach(child => options.skipped(child));
+						item.children.forEach(child => {
+							const errorMessage = parseResults(stdout, child.label);
+							if (errorMessage) {
+								const message = new vscode.TestMessage(errorMessage);
+								message.location = new vscode.Location(child.uri!, child.range!);
+								options.failed(child, message);
+							} else {
+								options.passed(child);
+							}
+						});
 					}
 					if (stdout.startsWith('[90m')) {
 						options.skipped(item);

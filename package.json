@@ -1,7 +1,7 @@
 {
 	"name": "cake-dart-tester",
-	"displayName": "cake-dart-tester",
-	"description": "Test API interface for VS Code for Dart Cake",
+	"displayName": "Cake Tester for Dart",
+	"description": "Test interface for VS Code for Cake Test for Dart",
 	"version": "0.0.3",
 	"publisher": "Polyhedra Studio, LLC",
 	"private": true,
@@ -11,8 +11,9 @@
 		"vscode": "^1.68.1"
 	},
 	"categories": [
-		"Other"
+		"Testing"
 	],
+	"icon": "./cake-slice.png",
 	"activationEvents": [
 		"workspaceContains:**/*.cake.dart",
 		"workspaceContains:*.cake.dart"

@@ -1,3 +1,7 @@
+# 0.0.4
+- [FIX] Fixed having to have a load-bearing test file in the root folder in order for extension to activate
+- [META] Added a placeholder icon with some other meta improvements. How cute!
+
 # 0.0.3
 - [CLEAN] Trimmed down some redundant code internally
 - [FIX] Fixed groups not running

@@ -1,6 +1,7 @@
 # 0.0.4
 - [FIX] Fixed having to have a load-bearing test file in the root folder in order for extension to activate
 - [META] Added a placeholder icon with some other meta improvements. How cute!
+- [ADD] Debug mode! You can now click next to a test in the panel to debug a specific test, group, or test runner.
 
 # 0.0.3
 - [CLEAN] Trimmed down some redundant code internally

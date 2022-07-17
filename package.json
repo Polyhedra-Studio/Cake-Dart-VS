@@ -2,7 +2,7 @@
 	"name": "cake-dart-tester",
 	"displayName": "Cake Tester for Dart",
 	"description": "Test interface for VS Code for Cake Test for Dart",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"publisher": "Polyhedra Studio, LLC",
 	"private": true,
 	"license": "none",

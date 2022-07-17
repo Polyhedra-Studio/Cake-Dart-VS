@@ -5,7 +5,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	const ctrl = vscode.tests.createTestController('cakeDartTester', 'Cake Dart Tester');
 	context.subscriptions.push(ctrl);
 
-	const runHandler = (request: vscode.TestRunRequest, cancellation: vscode.CancellationToken) => {
+	const runHandler = (request: vscode.TestRunRequest, cancellation: vscode.CancellationToken, debugMode: boolean = false) => {
 		const queue: { test: vscode.TestItem; data: CakeTestCase }[] = [];
 		const run = ctrl.createTestRun(request);
 
@@ -34,7 +34,7 @@ export async function activate(context: vscode.ExtensionContext) {
 					run.skipped(test);
 				} else {
 					run.started(test);
-					await data.run(test, run);
+					await data.run(test, run, debugMode);
 				}
 
 				run.appendOutput(`Completed ${test.id}\r\n`);
@@ -51,6 +51,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	};
 
 	ctrl.createRunProfile('Run Tests', vscode.TestRunProfileKind.Run, runHandler, true);
+
+	ctrl.createRunProfile('Debug Tests', vscode.TestRunProfileKind.Debug, (request, token) => runHandler(request, token, true), false);
 
 	ctrl.resolveHandler = async item => {
 		if (!item) {

@@ -2,6 +2,7 @@ import { TextDecoder } from 'util';
 import * as vscode from 'vscode';
 import { parseCakeTest, parseResults } from './cake-parser';
 import { exec } from 'node:child_process';
+import { CakeDebugRunner } from './cake-debugger';
 
 const textDecoder = new TextDecoder('utf-8');
 
@@ -109,56 +110,84 @@ abstract class CakeTestItem {
 		return name;
 	}
 
-	async run(item: vscode.TestItem, options: vscode.TestRun): Promise<void> {
-		const cmd = `dart run --define=${this.propertyToSearchFor}='${this.name}' ${item.uri!.path}`;
-		const promise = new Promise<void>((resolve, reject) => {
+	async run(item: vscode.TestItem, options: vscode.TestRun, debugMode: boolean = false,): Promise<void> {
+		let cmd: string = `dart run --define=${this.propertyToSearchFor}='${this.name}' ${item.uri!.path}`;
+		const debugRunner = debugMode ? new CakeDebugRunner() : undefined;
+
+		const parseStderr = (output: string) => {
+			const message = new vscode.TestMessage(`Internal error\n${output}`);
+			message.location = new vscode.Location(item.uri!, item.range!);
+			options.failed(item, message);
+		}
+
+		const parseStdout = (output: string) => {
+			const passedRecursive = (recursiveParent: vscode.TestItem) => {
+				options.passed(recursiveParent);
+				recursiveParent.children.forEach(child => passedRecursive(child))
+			}
+			const failedRecursive = (recursiveParent: vscode.TestItem) => {
+				const message = new vscode.TestMessage(output);
+				message.location = new vscode.Location(recursiveParent.uri!, recursiveParent.range!);
+				options.failed(recursiveParent, message);
+
+				recursiveParent.children.forEach(child => {
+					const errorMessage = parseResults(output, child.label);
+					if (errorMessage) {
+						failedRecursive(child);
+					} else {
+						passedRecursive(child);
+					}
+				});
+			}
+			const neutralRecursive = (recursiveParent: vscode.TestItem) => {
+				options.skipped(recursiveParent);
+				recursiveParent.children.forEach(child => neutralRecursive(child))
+			}
+
+			// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
+			if (output.startsWith('[32m')) {
+				passedRecursive(item);
+			}
+
+			if (output.startsWith('[31m')) {
+				failedRecursive(item);
+			}
+
+			if (output.startsWith('[90m')) {
+				neutralRecursive(item);
+			}
+		};
+
+		const execute = (resolve: any) => {
 			exec(cmd, (error, stdout, stderr) => {
 				if (stderr) {
-					const message = new vscode.TestMessage(`Internal error\n${stderr}`);
-					message.location = new vscode.Location(item.uri!, item.range!);
-					options.failed(item, message);
+					parseStderr(stderr);
 				}
-		
-				// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
+
 				if (stdout) {
-					const passedRecursive = (recursiveParent: vscode.TestItem) => {
-						options.passed(recursiveParent);
-						recursiveParent.children.forEach(child => passedRecursive(child))
-					}
-					const failedRecursive = (recursiveParent: vscode.TestItem) => {
-						const message = new vscode.TestMessage(stdout);
-						message.location = new vscode.Location(recursiveParent.uri!, recursiveParent.range!);
-						options.failed(recursiveParent, message);
-
-						recursiveParent.children.forEach(child => {
-							const errorMessage = parseResults(stdout, child.label);
-							if (errorMessage) {
-								failedRecursive(child);
-							} else {
-								passedRecursive(child);
-							}
-						});
-					}
-					const neutralRecursive = (recursiveParent: vscode.TestItem) => {
-						options.skipped(recursiveParent);
-						recursiveParent.children.forEach(child => neutralRecursive(child))
-					}
-
-					if (stdout.startsWith('[32m')) {
-						passedRecursive(item);
-					}
-
-					if (stdout.startsWith('[31m')) {
-						failedRecursive(item);
-					}
-
-					if (stdout.startsWith('[90m')) {
-						neutralRecursive(item);
-					}
+					parseStdout(stdout);
 				}
-	
 				resolve();
 			});
+		}
+
+		const promise = new Promise<void>((resolve, reject) => {
+			if (debugMode) {
+				const workspace = vscode.workspace.getWorkspaceFolder(item.uri!);
+				if (!workspace) {
+					parseStderr('Cannot find workspace folder.');
+					resolve();
+				}
+
+				// Launch style
+				debugRunner?.startLaunch(item, workspace!, this.propertyToSearchFor, this.name).then(() => {
+					vscode.debug.onDidTerminateDebugSession((session) => {
+						execute(resolve);
+					});
+				});
+			} else {
+				execute(resolve);
+			}
 		});
 		return promise;
 	}

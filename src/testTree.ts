@@ -121,12 +121,18 @@ abstract class CakeTestItem {
 		}
 
 		const parseStdout = (output: string) => {
+			const sanitizedOutput = output
+			.replaceAll('[32m', '')
+			.replaceAll('[31m', '')
+			.replaceAll('[90m', '')
+			.replaceAll('[0m', '');
+
 			const passedRecursive = (recursiveParent: vscode.TestItem) => {
 				options.passed(recursiveParent);
 				recursiveParent.children.forEach(child => passedRecursive(child))
 			}
 			const failedRecursive = (recursiveParent: vscode.TestItem) => {
-				const message = new vscode.TestMessage(output);
+				const message = new vscode.TestMessage(sanitizedOutput);
 				message.location = new vscode.Location(recursiveParent.uri!, recursiveParent.range!);
 				options.failed(recursiveParent, message);
 

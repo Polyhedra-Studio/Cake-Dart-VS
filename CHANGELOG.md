@@ -1,3 +1,6 @@
+# 0.0.5
+- [FIX] Cleaned up output to not print ANSI colors as vscode messages don't know how to print these and just adds noise to the error message.
+
 # 0.0.4
 - [FIX] Fixed having to have a load-bearing test file in the root folder in order for extension to activate
 - [META] Added a placeholder icon with some other meta improvements. How cute!

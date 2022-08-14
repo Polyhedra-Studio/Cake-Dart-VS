@@ -2,8 +2,8 @@
 	"name": "cake-dart-tester",
 	"displayName": "Cake Tester for Dart",
 	"description": "Test interface for VS Code for Cake Test for Dart",
-	"version": "0.0.4",
-	"publisher": "Polyhedra Studio, LLC",
+	"version": "0.0.5",
+	"publisher": "Polyhedra",
 	"private": true,
 	"license": "none",
 	"repository": "http://butterfree.lan:30120/dart/cake-vs.git",
@@ -13,7 +13,7 @@
 	"categories": [
 		"Testing"
 	],
-	"icon": "./cake-slice.png",
+	"icon": "cake-slice.png",
 	"activationEvents": [
 		"workspaceContains:**/*.cake.dart",
 		"workspaceContains:*.cake.dart"

@@ -1,3 +1,6 @@
+# 0.1.0
+- [MOD] Updated code to work with Cake 4.0.0 (previous versions are now deprecated)
+
 # 0.0.4
 - [FIX] Fixed having to have a load-bearing test file in the root folder in order for extension to activate
 - [META] Added a placeholder icon with some other meta improvements. How cute!

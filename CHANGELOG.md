@@ -1,3 +1,7 @@
+
+# 0.1.0
+- [MOD] Updated code to work with Cake 4.0.0 (previous versions are now deprecated)
+
 # 0.0.5
 - [FIX] Cleaned up output to not print ANSI colors as vscode messages don't know how to print these and just adds noise to the error message.
 

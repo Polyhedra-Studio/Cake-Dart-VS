@@ -6,7 +6,9 @@
 [ ] Add "Refactor" options for Expect -> convert Expect(Type) to Expect.Type and converting Expect.equals to Expect.isTrue/Expect.isFalse and vice versa
 [ ] Add baked in shortcuts to create TestRunners, Groups, Tests, and Expects
 [X] Remove [32m and the like from the output message as VScode does not see these
+[ ] Be able to run a detected test file instead of it's children every time
 
 # Bugs
 [ ] Adding a new test file will duplicate old test files in the test explorer until refresh
 [ ] Sometimes tests do not appear in test explorer (possibly if nested) - they will still cause the test explorer to fail if they fail though
+

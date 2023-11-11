@@ -1,3 +1,8 @@
+# 1.0.0
+- [MOD] Updated detection to work with Cake v5.0.0. Cake v4 is not deprecated with this version, with one small exception.
+- [ADD] Added support for (TestRunner/Group/Test)Of constructors.
+- [BREAKING] Removed GroupDefault since that was deprecated in Cake v4 and removed in Cake v5. (You may safely remove the 'Default' part to work effectively.)
+- [FIX] Better detection of class names. No more having 'Test' or 'Group' in the test title setting off false positives.
 
 # 0.1.0
 - [MOD] Updated code to work with Cake 4.0.0 (previous versions are now deprecated)

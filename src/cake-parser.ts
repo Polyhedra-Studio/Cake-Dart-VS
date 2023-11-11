@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 
-const testRunnerReShort = /TestRunner(Default)?\b/;
-const groupReShort = /Group(Default)?\b/;
-const testReShort = /Test(Default)?\b/;
+const testRunnerReShort = /(\s+)TestRunner(Default)?(Of)?\b/;
+const groupReShort = /(\s+)Group(Of)?\b/;
+const testReShort = /(\s+)Test(Of)?\b/;
 const hasNameRe = /(["'])((?:\\1|(?:(?!\1)).)*)(\1|$)/;
 
 export const parseCakeTest = (text: string, events: {

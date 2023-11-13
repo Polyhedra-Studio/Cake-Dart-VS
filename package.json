@@ -6,7 +6,7 @@
 	"publisher": "Polyhedra",
 	"private": true,
 	"license": "MPL-2.0",
-	"repository": "https://github.com/Polyhedra/cake-dart-vs",
+	"repository": "https://github.com/Polyhedra-Studio/Cake-Dart-VS.git",
 	"engines": {
 		"vscode": "^1.68.1"
 	},

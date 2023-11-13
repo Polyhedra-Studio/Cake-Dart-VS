@@ -30,15 +30,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		const runTestQueue = async () => {
 			for (const { test, data } of queue) {
-				run.appendOutput(`Running ${test.id}\r\n`);
 				if (cancellation.isCancellationRequested) {
 					run.skipped(test);
 				} else {
 					run.started(test);
 					await data.run(test, run, debugMode);
 				}
-
-				run.appendOutput(`Completed ${test.id}\r\n`);
 			}
 
 			run.end();

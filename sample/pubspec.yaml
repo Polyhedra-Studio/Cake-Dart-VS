@@ -8,5 +8,5 @@ environment:
 
 dependencies:
   cake:
-    version: ^5.0.0
+    version: ^5.0.1
     hosted: http://butterfree.lan:30117

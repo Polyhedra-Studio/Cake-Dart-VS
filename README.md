@@ -1,22 +1,21 @@
 <div align="center">
     <img src="./images/cake_logo.png" alt="Cake Tester Logo" width="256" />
     <h1> Cake Test Runner for Visual Studio Code</h1>
-    <p>Learn more about Cake, the lightweight, explicit testing framework for Dart/Flutter.</p>
+    <p><a href="https://github.com/Polyhedra-Studio/Cake" _target="blank">Learn more about Cake, the lightweight, explicit testing framework for Dart/Flutter.</a></p>
 </div>
 
 ## Getting started
 
-- Get the extension within VS Code, or download from the Open VSX Registry or Visual Studio Marketplace.
-*Note: Cake Test Runner is compatible with VS Code version 1.68.1 and above.*
+- Get the extension within [VS Code](https://code.visualstudio.com), or download from the Open VSX Registry or Visual Studio Marketplace.
 
 - Include Cake in your `pubspec.yaml` file or install by running `dart pub get cake`
 - Open the Test Explorer in VS Code or open a Cake test file (any file ending with .cake.dart) to run.
 
 ## Requirements
 
-- VS Code version 1.68.1 and above.
-- Dart 2.17 and above.
-- Cake v4.0 and above.
+- [VS Code](https://code.visualstudio.com) version 1.68.1 and above.
+- [Dart 2.17](https://dart.dev/get-dart) and above.
+- [Cake v4.0](https://github.com/Polyhedra-Studio/Cake) and above.
 
 ## Features
 
@@ -30,7 +29,7 @@ You can run or debug files, Test Runners, Groups, or Tests directly from the cod
 
 ## Feedback
 
-If you discover a bug or have a suggestion, please check Issues page. If someone has already submitted your bug/suggestion, please upvote so it can get better visibility.
+If you discover a bug or have a suggestion, please check [Issues](https://github.com/Polyhedra-Studio/Cake-Dart-VS/issues) page. If someone has already submitted your bug/suggestion, please upvote so it can get better visibility.
 
 ## License
-This extension is licensed under Mozilla Public License, 2.0.
+This extension is licensed under [Mozilla Public License, 2.0](https://www.mozilla.org/en-US/MPL/).

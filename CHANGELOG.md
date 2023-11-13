@@ -3,6 +3,13 @@
 - [ADD] Added support for (TestRunner/Group/Test)Of constructors.
 - [BREAKING] Removed GroupDefault since that was deprecated in Cake v4 and removed in Cake v5. (You may safely remove the 'Default' part to work effectively.)
 - [FIX] Better detection of class names. No more having 'Test' or 'Group' in the test title setting off false positives.
+- [FIX] Lens icons and messages now appear where the test item begins, not where the title is declared.
+- [CLEAN] Restructured some models and added comments for better readability.
+- [FIX] Deleting or renaming a Cake file will now automatically update the test panel.
+- [MOD] Should try to refresh test panel less often and only when a Cake file is modified.
+- [ADD] Tests can be run from the file level from the test panel.
+- [META] Updated license to MPL-2.0 to match the rest of Polyhedra projects.
+- [ADD] Changed out placeholder icon.
 
 # 0.1.0
 - [MOD] Updated code to work with Cake 4.0.0 (previous versions are now deprecated)

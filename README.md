@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="./images/cake_logo.png" alt="Cake Tester Logo" width="256" />
+    <img src="https://github.com/Polyhedra-Studio/Cake-Dart-VS/blob/main/images/cake_logo.png?raw=true" alt="Cake Tester Logo" width="256" />
     <h1> Cake Test Runner for Visual Studio Code</h1>
     <p><a href="https://github.com/Polyhedra-Studio/Cake" _target="blank">Learn more about Cake, the lightweight, explicit testing framework for Dart/Flutter.</a></p>
 </div>
@@ -24,7 +24,7 @@
 You can run or debug files, Test Runners, Groups, or Tests directly from the code or in The Test Explorer in VS Code.
 
 <div align="center">
-    <img src="./images/demo.gif" alt="Test Explorer demo in VS Code" />
+    <img src="https://github.com/Polyhedra-Studio/Cake-Dart-VS/blob/main/images/demo.gif?raw=true" alt="Test Explorer demo in VS Code" />
 </div>
 
 ## Feedback

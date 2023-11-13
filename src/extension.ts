@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-import { CakeTestCase, testData, TestFile } from './testTree';
+import { testData, TestFile } from './models/test-file';
+import { CakeTestCase } from './models/cake-test-item';
 
 export async function activate(context: vscode.ExtensionContext) {
 	const ctrl = vscode.tests.createTestController('cakeDartTester', 'Cake Dart Tester');
@@ -16,11 +17,11 @@ export async function activate(context: vscode.ExtensionContext) {
 				}
 
 				const data: any = testData.get(test);
-				if (data && (data.isRunnable)) {
+				if (data && data.ready) {
 					run.enqueued(test);
 					queue.push({ test, data });
 				} else {
-					if (data instanceof TestFile && !data.didResolve) {
+					if (data instanceof TestFile && !data.ready) {
 						await data.updateFromDisk(ctrl, test);
 					}
 				}
@@ -66,36 +67,67 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	};
 
-	function updateNodeForDocument(e: vscode.TextDocument) {
-		if (e.uri.scheme !== 'file') {
-			return;
-		}
-
-		if (!e.uri.path.endsWith('.cake.dart')) {
-			return;
-		}
-
-		const { file, data } = getOrCreateFile(ctrl, e.uri);
-		data.updateFromContents(ctrl, e.getText(), file);
-	}
-
+	// Do an initial scan for any valid test files
 	for (const document of vscode.workspace.textDocuments) {
-		updateNodeForDocument(document);
+		updateNodeForDocument(ctrl, document);
 	}
 
+	// Watch for changes to test files
 	context.subscriptions.push(
-		vscode.workspace.onDidOpenTextDocument(updateNodeForDocument),
-		vscode.workspace.onDidChangeTextDocument(e => updateNodeForDocument(e.document)),
+		vscode.workspace.onDidChangeTextDocument(e => updateNodeForDocument(ctrl, e.document)),
+		vscode.workspace.onDidCreateFiles(e => createNodeForDocuments(ctrl, e.files)),
+		vscode.workspace.onDidRenameFiles(e => renameNodeForDocument(ctrl, e.files)),
+		vscode.workspace.onDidDeleteFiles(e => removeNodeForDocuments(ctrl, e.files)),
 	);
 }
 
+function isCakeFile(uri: vscode.Uri) {
+	return uri.scheme === 'file' && uri.path.endsWith('.cake.dart');
+}
+
+function updateNodeForDocument(controller: vscode.TestController,  document: vscode.TextDocument) {
+	if (!isCakeFile(document.uri)) {
+		return;
+	}
+
+	const { file, data } = getOrCreateFile(controller, document.uri);
+	data.updateFromContents(controller, document.getText(), file);
+}
+
+function createNodeForDocuments(controller: vscode.TestController, files: readonly vscode.Uri[]) {
+	for (const document of vscode.workspace.textDocuments) {
+		updateNodeForDocument(controller, document);
+	}
+}
+
+function removeNodeForDocuments(controller: vscode.TestController, files: readonly vscode.Uri[]) {
+	for (const document of vscode.workspace.textDocuments) {
+		if (!isCakeFile(document.uri)) {
+			controller.items.delete(document.uri.toString());
+		}
+	}
+}
+
+function renameNodeForDocument(controller: vscode.TestController,  files: readonly { readonly oldUri: vscode.Uri, readonly newUri: vscode.Uri }[]) {
+	for (const { oldUri, newUri } of files) {
+		if (isCakeFile(oldUri)) {
+			controller.items.delete(oldUri.toString());
+			if (isCakeFile(newUri)) {
+				const { file, data } = getOrCreateFile(controller, newUri);
+				data.updateFromDisk(controller, file);
+			}
+		}
+	}
+}
+
 function getOrCreateFile(controller: vscode.TestController, uri: vscode.Uri) {
-	const existing = controller.items.get(uri.toString());
+	const itemId = uri.toString();
+	const existing = controller.items.get(itemId);
 	if (existing) {
 		return { file: existing, data: testData.get(existing) as TestFile };
 	}
 
-	const file = controller.createTestItem(uri.toString(), uri.path.split('/').pop()!, uri);
+	const file = controller.createTestItem(itemId, uri.path.split('/').pop()!, uri);
 	controller.items.add(file);
 
 	const data = new TestFile();
@@ -135,7 +167,7 @@ function startWatchingWorkspace(controller: vscode.TestController) {
 		watcher.onDidCreate(uri => getOrCreateFile(controller, uri));
 		watcher.onDidChange(uri => {
 			const { file, data } = getOrCreateFile(controller, uri);
-			if (data.didResolve) {
+			if (!data.ready) {
 				data.updateFromDisk(controller, file);
 			}
 		});

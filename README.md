@@ -15,7 +15,7 @@
 
 - [VS Code](https://code.visualstudio.com) version 1.68.1 and above.
 - [Dart 2.17](https://dart.dev/get-dart) and above.
-- [Cake v4.0](https://github.com/Polyhedra-Studio/Cake) and above.
+- [Cake v4.0](https://pub.dev/packages/cake) and above.
 
 ## Features
 

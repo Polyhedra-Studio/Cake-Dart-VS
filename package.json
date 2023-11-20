@@ -15,9 +15,17 @@
 	],
 	"icon": "images/cake_logo.png",
 	"activationEvents": [
-		"workspaceContains:**/*.cake.dart",
-		"workspaceContains:*.cake.dart"
+		"workspaceContains:**/*.dart",
+		"workspaceContains:*.dart"
 	],
+	"contributes": {
+		"snippets": [
+			{
+				"language": "dart",
+				"path": "./snippets/snippets.json"
+			}
+		]
+	},
 	"main": "./out/extension.js",
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

@@ -1,0 +1,122 @@
+{
+    "Cake Test File without Context": {
+        "prefix": "cake-runner",
+        "body": [
+            "import 'package:cake/cake.dart';",
+            "",
+            "void main() async {",
+            "   TestRunnerDefault('$1', [",
+            "       Group('$2', [",
+            "           Test('$3',",
+            "               action: (test) => true,",
+            "               assertions: (test) => [",
+            "                   Expect.isTrue(test.actual),",
+            "               ],",
+            "           ),",
+            "       ]),",
+            "    ]);",
+            "}",
+            ""
+        ],
+        "description": "Generate a Cake test with a default context"
+    },
+    "Cake Test File with Context": {
+        "prefix": "cake-runner-context",
+        "body": [
+            "import 'package:cake/cake.dart';",
+            "",
+            "void main() async {",
+            "   TestRunner<$1>('$2 Tests', [",
+            "       Group('$3', [",
+            "           Test('$4',",
+            "               action: (test) => true",
+            "               assertions: (test) => [",
+            "                   Expect.isTrue(test.actual),",
+            "               ],",
+            "           ),",
+            "       ]),",
+            "    ],",
+            "    contextBuilder: $1.new,",
+            "    );",
+            "}",
+            "",
+            "class $1 extends Context<$2> {",
+            "   $0",
+            "",
+            "   $1();",
+            "}",
+            ""
+        ],
+        "description": "Generate a Test Runner with a Context"
+    },
+    "Cake Group": {
+        "prefix": "cake-group",
+        "body": [
+            "Group('$1', [",
+            "   $0",
+            "]),"
+        ],
+        "description": "Generate a group of tests"
+    },
+    "Cake Test": {
+        "prefix": "cake-test",
+        "body": [
+            "Test('$1',",
+            "   action: (test) => $2",
+            "   assertions: (test) => [",
+            "       $0",
+            "   ],",
+            "),"
+        ],
+        "description": "Generate a test"
+    },
+    "Cake Expect Equals": {
+        "prefix": "cake-ex-eq",
+        "body": [
+            "Expect.equals(actual: $1, expected: $2),"
+        ],
+        "description": "Generate an Equals Expect"
+    },
+    "Cake Expect Not Equals": {
+        "prefix": "cake-ex-ne",
+        "body": [
+            "Expect.isNotEqual(actual: $1, notExpected: $2),"
+        ],
+        "description": "Generate a Not Equals Expect"
+    },
+    "Cake Expect is True": {
+        "prefix": "cake-ex-t",
+        "body": [
+            "Expect.isTrue($1),"
+        ],
+        "description": "Generate a Is True Expect"
+    },
+    "Cake Expect is False": {
+        "prefix": "cake-ex-f",
+        "body": [
+            "Expect.isFalse($1),"
+        ],
+        "description": "Generate a Is False Expect"
+    },
+    "Cake Expect is Null": {
+        "prefix": "cake-ex-n",
+        "body": [
+            "Expect.isNull($1),"
+        ],
+        "description": "Generate a Is Null Expect"
+    },
+    "Cake Expect is Not Null": {
+        "prefix": "cake-ex-nn",
+        "body": [
+            "Expect.isNotNull($1),"
+        ],
+        "description": "Generate a Is Not Null Expect"
+    },
+    "Cake Expect is Type": {
+        "prefix": "cake-ex-type",
+        "body": [
+            "Expect<$1>.isType($2),"
+        ],
+        "description": "Generate a Is Type Expect"
+    }
+}

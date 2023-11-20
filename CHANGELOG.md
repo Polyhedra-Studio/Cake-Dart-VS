@@ -1,3 +1,8 @@
+# 1.1.0
+- [META] Fix images so they appear correctly outside of github
+- [META] Existing Cake files are no longer needed to use extension
+- [ADD] Added snippets for Test Runner, Groups, Test, and Expects.
+
 # 1.0.0
 - [MOD] Updated detection to work with Cake v5.0.0. Cake v4 is not deprecated with this version, with one small exception.
 - [ADD] Added support for (TestRunner/Group/Test)Of constructors.

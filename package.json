@@ -2,7 +2,7 @@
 	"name": "cake-dart-vs",
 	"displayName": "Cake Tester for Dart",
 	"description": "Cake test framework support for Dart",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"publisher": "Polyhedra",
 	"private": true,
 	"license": "MPL-2.0",

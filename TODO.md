@@ -4,7 +4,7 @@
 [ ] Clean up individual test messages to show individual error
 [X] Allow for running a test file, rather than the nested test runner(s)
 [ ] Add "Refactor" options for Expect -> convert Expect(Type) to Expect.Type and converting Expect.equals to Expect.isTrue/Expect.isFalse and vice versa
-[ ] Add baked in shortcuts to create TestRunners, Groups, Tests, and Expects
+[X] Add baked in shortcuts to create TestRunners, Groups, Tests, and Expects
 [X] Remove [32m and the like from the output message as VScode does not see these
 
 # Bugs

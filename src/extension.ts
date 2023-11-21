@@ -1,13 +1,15 @@
 import * as vscode from 'vscode';
 import { testData, TestFile } from './models/test-file';
 import { CakeTestCase } from './models/cake-test-item';
+import { Workspace } from './models/workspace';
+import { CakeTestData } from './models/cake-test-data';
 
 export async function activate(context: vscode.ExtensionContext) {
 	const ctrl = vscode.tests.createTestController('cakeDartTester', 'Cake Dart Tester');
 	context.subscriptions.push(ctrl);
 
 	const runHandler = (request: vscode.TestRunRequest, cancellation: vscode.CancellationToken, debugMode: boolean = false) => {
-		const queue: { test: vscode.TestItem; data: CakeTestCase }[] = [];
+		const queue: { test: vscode.TestItem; data: CakeTestData }[] = [];
 		const run = ctrl.createTestRun(request);
 
 		const discoverTests = async (tests: Iterable<vscode.TestItem>) => {
@@ -16,13 +18,13 @@ export async function activate(context: vscode.ExtensionContext) {
 					continue;
 				}
 
-				const data: any = testData.get(test);
-				if (data && data.ready) {
-					run.enqueued(test);
-					queue.push({ test, data });
-				} else {
-					if (data instanceof TestFile && !data.ready) {
-						await data.updateFromDisk(ctrl, test);
+				const data: CakeTestData | undefined = testData.get(test);
+				if (data) {
+					if (data instanceof Workspace) {
+						discoverTests(gatherTestItems(test.children));
+					} else {
+						run.enqueued(test);
+						queue.push({ test, data });
 					}
 				}
 			}
@@ -41,11 +43,17 @@ export async function activate(context: vscode.ExtensionContext) {
 			run.end();
 		};
 
+		const gatherTestItems = (collection: vscode.TestItemCollection) => {
+			const items: vscode.TestItem[] = [];
+			collection.forEach(item => items.push(item));
+			return items;
+		}
+
 		discoverTests(request.include ?? gatherTestItems(ctrl.items)).then(runTestQueue);
 	};
 
 	ctrl.refreshHandler = async () => {
-		await Promise.all(getWorkspaceTestPatterns().map(({ pattern }) => findInitialFiles(ctrl, pattern)));
+		await Promise.all(getWorkspaceTestPatterns().map(({ pattern }) => scanFiles(ctrl, pattern)));
 	};
 
 	ctrl.createRunProfile('Run Tests', vscode.TestRunProfileKind.Run, runHandler, true);
@@ -54,7 +62,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	ctrl.resolveHandler = async item => {
 		if (!item) {
-			context.subscriptions.push(...startWatchingWorkspace(ctrl));
+			scanAllFiles(ctrl);
 			return;
 		}
 
@@ -64,80 +72,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	};
 
-	// Do an initial scan for any valid test files
-	for (const document of vscode.workspace.textDocuments) {
-		updateNodeForDocument(ctrl, document);
-	}
-
-	// Watch for changes to test files
-	context.subscriptions.push(
-		vscode.workspace.onDidChangeTextDocument(e => updateNodeForDocument(ctrl, e.document)),
-		vscode.workspace.onDidCreateFiles(e => createNodeForDocuments(ctrl, e.files)),
-		vscode.workspace.onDidRenameFiles(e => renameNodeForDocument(ctrl, e.files)),
-		vscode.workspace.onDidDeleteFiles(e => removeNodeForDocuments(ctrl, e.files)),
-	);
-}
-
-function isCakeFile(uri: vscode.Uri) {
-	return uri.scheme === 'file' && uri.path.endsWith('.cake.dart');
-}
-
-function updateNodeForDocument(controller: vscode.TestController,  document: vscode.TextDocument) {
-	if (!isCakeFile(document.uri)) {
-		return;
-	}
-
-	const { file, data } = getOrCreateFile(controller, document.uri);
-	data.updateFromContents(controller, document.getText(), file);
-}
-
-function createNodeForDocuments(controller: vscode.TestController, files: readonly vscode.Uri[]) {
-	for (const document of vscode.workspace.textDocuments) {
-		updateNodeForDocument(controller, document);
-	}
-}
-
-function removeNodeForDocuments(controller: vscode.TestController, files: readonly vscode.Uri[]) {
-	for (const document of vscode.workspace.textDocuments) {
-		if (!isCakeFile(document.uri)) {
-			controller.items.delete(document.uri.toString());
-		}
-	}
-}
-
-function renameNodeForDocument(controller: vscode.TestController,  files: readonly { readonly oldUri: vscode.Uri, readonly newUri: vscode.Uri }[]) {
-	for (const { oldUri, newUri } of files) {
-		if (isCakeFile(oldUri)) {
-			controller.items.delete(oldUri.toString());
-			if (isCakeFile(newUri)) {
-				const { file, data } = getOrCreateFile(controller, newUri);
-				data.updateFromDisk(controller, file);
-			}
-		}
-	}
-}
-
-function getOrCreateFile(controller: vscode.TestController, uri: vscode.Uri) {
-	const itemId = uri.toString();
-	const existing = controller.items.get(itemId);
-	if (existing) {
-		return { file: existing, data: testData.get(existing) as TestFile };
-	}
-
-	const file = controller.createTestItem(itemId, uri.path.split('/').pop()!, uri);
-	controller.items.add(file);
-
-	const data = new TestFile();
-	testData.set(file, data);
-
-	file.canResolveChildren = true;
-	return { file, data };
-}
-
-function gatherTestItems(collection: vscode.TestItemCollection) {
-	const items: vscode.TestItem[] = [];
-	collection.forEach(item => items.push(item));
-	return items;
+	startWatchingWorkspaces(ctrl);
 }
 
 function getWorkspaceTestPatterns() {
@@ -151,26 +86,67 @@ function getWorkspaceTestPatterns() {
 	}));
 }
 
-async function findInitialFiles(controller: vscode.TestController, pattern: vscode.GlobPattern) {
+function scanAllFiles(controller: vscode.TestController) {
+	return Promise.all(getWorkspaceTestPatterns().map(({ workspaceFolder, pattern }) => scanFiles(controller, pattern)));
+}
+
+function getOrCreateWorkspace(controller: vscode.TestController, uri: vscode.Uri): { file: vscode.TestItem, data: Workspace } {
+	const workspace = vscode.workspace.getWorkspaceFolder(uri);
+	const workspaceId = workspace?.name ?? 'single_workspace';
+	const existing = controller.items.get(workspaceId);
+	if (existing) {
+		return { file: existing, data: testData.get(existing) as Workspace };
+	}
+
+	const singleWorkspace = vscode.workspace.workspaceFolders === undefined || vscode.workspace.workspaceFolders.length === 1;
+	const file = controller.createTestItem(workspaceId, workspace?.name ?? 'Workspace');
+	const data = new Workspace(workspace?.name ?? 'Workspace', singleWorkspace);
+	testData.set(file, data);
+	file.canResolveChildren = true;
+	if (!singleWorkspace) {
+		controller.items.add(file);
+	}
+	return { file, data };
+}
+
+async function scanFiles(controller: vscode.TestController, pattern: vscode.GlobPattern) {
 	for (const file of await vscode.workspace.findFiles(pattern)) {
-		getOrCreateFile(controller, file);
+		const workspaceData = getOrCreateWorkspace(controller, file);
+		workspaceData.data.createFile(controller, workspaceData.file, file);
 	}
 }
 
-function startWatchingWorkspace(controller: vscode.TestController) {
+function isCakeFile(uri: vscode.Uri) {
+	return uri.scheme === 'file' && uri.path.endsWith('.cake.dart');
+}
+
+function createNodeForUri(controller: vscode.TestController, uri: vscode.Uri) {
+	if (isCakeFile(uri)) {
+		const workspace = getOrCreateWorkspace(controller, uri);
+		workspace.data.createFile(controller, workspace.file, uri);
+	}
+}
+
+function updateNodeForUri(controller: vscode.TestController, uri: vscode.Uri) {
+	if (isCakeFile(uri)) {
+		const workspace = getOrCreateWorkspace(controller, uri);
+		workspace.data.updateFileFromDisk(controller, workspace.file, uri);
+	}
+}
+
+function removeNodeForUri(controller: vscode.TestController, uri: vscode.Uri) {
+	if (isCakeFile(uri)) {
+		const workspace = getOrCreateWorkspace(controller, uri);
+		workspace.data.removeFile(workspace.file, uri.toString());
+	}
+}
+
+function startWatchingWorkspaces(controller: vscode.TestController) {
 	return getWorkspaceTestPatterns().map(({ workspaceFolder, pattern }) => {
 		const watcher = vscode.workspace.createFileSystemWatcher(pattern);
-
-		watcher.onDidCreate(uri => getOrCreateFile(controller, uri));
-		watcher.onDidChange(uri => {
-			const { file, data } = getOrCreateFile(controller, uri);
-			if (!data.ready) {
-				data.updateFromDisk(controller, file);
-			}
-		});
-		watcher.onDidDelete(uri => controller.items.delete(uri.toString()));
-
-		findInitialFiles(controller, pattern);
+		watcher.onDidChange(e => updateNodeForUri(controller, e)),
+		watcher.onDidCreate(e => createNodeForUri(controller, e)),
+		watcher.onDidDelete(e => removeNodeForUri(controller, e));
 
 		return watcher;
 	});

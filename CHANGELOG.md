@@ -2,6 +2,7 @@
 - [META] Fix images so they appear correctly outside of github
 - [META] Existing Cake files are no longer needed to use extension
 - [ADD] Added snippets for Test Runner, Groups, Test, and Expects.
+- [ADD] Added support for multiple workspaces.
 
 # 1.0.0
 - [MOD] Updated detection to work with Cake v5.0.0. Cake v4 is not deprecated with this version, with one small exception.

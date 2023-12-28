@@ -5,8 +5,17 @@ export class CakeDebugRunner {
         item: vscode.TestItem, 
         workspaceFolder: vscode.WorkspaceFolder,
         runArg: string | undefined,
+        isFlutter: boolean,
     ) {
-        const config: vscode.DebugConfiguration = {
+        const config: vscode.DebugConfiguration = isFlutter ? {
+            type: 'dart',
+            name: 'Cake Debugger (Flutter)',
+            request: 'launch',
+            cwd: workspaceFolder.uri.path,
+            program: item.uri?.path,
+            toolArgs: runArg,
+            deviceId: 'flutter-tester',
+        } : {
             type: 'dart',
             name: 'Cake Debugger',
             request: 'launch',

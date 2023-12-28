@@ -3,7 +3,6 @@ import { exec } from 'node:child_process';
 
 import { CakeDebugRunner } from '../cake-debugger';
 import { parseResults } from '../cake-parser';
-import { CakeFlutterDebugRunner } from '../cake-flutter-debugger';
 
 export abstract class CakeTestData {
     protected abstract dartDefineArgs(): string | undefined;
@@ -18,9 +17,6 @@ export abstract class CakeTestData {
 
 		const action: string = this.isFlutter ? 'flutter test' : 'dart run';
 		let cmd: string = `${action} ${this.dartDefineArgs() ? this.dartDefineArgs() : ''} ${item.uri!.path}`;
-		const debugRunner = debugMode ? 
-			(this.isFlutter ? new CakeFlutterDebugRunner() : new CakeDebugRunner())
-			: undefined;
 
 		const parseStderr = (output: string) => {
 			const message = new vscode.TestMessage(`Internal error\n${output}`);
@@ -99,7 +95,7 @@ export abstract class CakeTestData {
 			}
 
 			if (debugMode) {
-				debugRunner?.startLaunch(item, workspace!, this.dartDefineArgs()).then(() => {
+				new CakeDebugRunner().startLaunch(item, workspace!, this.dartDefineArgs(), this.isFlutter).then(() => {
 					vscode.debug.onDidTerminateDebugSession((session) => {
 						execute(resolve, workspace?.uri.fsPath);
 					});

@@ -1,15 +1,16 @@
 import * as vscode from 'vscode';
 
-export class CakeDebugRunner {
+export class CakeFlutterDebugRunner {
     startLaunch(
         item: vscode.TestItem, 
         workspaceFolder: vscode.WorkspaceFolder,
-        runArg: string | undefined,
+        runArg: string | undefined
     ) {
         const config: vscode.DebugConfiguration = {
-            type: 'dart',
-            name: 'Cake Debugger',
+            type: 'cake',
+            name: 'Cake Debugger (Flutter)',
             request: 'launch',
+            cwd: workspaceFolder.uri.path,
             program: item.uri?.path,
             toolArgs: runArg,
         };

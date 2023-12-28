@@ -14,6 +14,8 @@ export const testData = new WeakMap<vscode.TestItem, CakeTestData>();
  * This will kick off reading the file and creating a tree of
  * other CakeTestItems.
  *
+ * This will trigger Flutter tests if at least one of the test runners found
+ * is a Flutter test runner.
  */
 export class TestFile extends CakeTestData {
 	public ready: boolean = false;
@@ -21,7 +23,6 @@ export class TestFile extends CakeTestData {
 	protected dartDefineArgs(): string | undefined {
 		return undefined;
 	}
-
 
 	/**
 	 * Fetches new information from the filesystem, in case the file did not resolve
@@ -61,8 +62,9 @@ export class TestFile extends CakeTestData {
 		const createObject = (
 			range: vscode.Range, 
 			name: string, 
-			ctor: new (name: string) => CakeTestItem, 
+			ctor: new (name: string, isFlutter: boolean) => CakeTestItem, 
 			parent: { item: vscode.TestItem, children: vscode.TestItem[]},
+			isFlutter: boolean,
 		): vscode.TestItem => {
 			let id = `${parent.item.id}/${name}`;
 			// Make sure that the id is unique, even if the user makes the same name for tests
@@ -71,7 +73,7 @@ export class TestFile extends CakeTestData {
 				id += `(${duplicateNames.length})`;
 			}
 
-			const data = new ctor(name);
+			const data = new ctor(name, isFlutter);
 			const thead = controller.createTestItem(id, data.getLabel(), item.uri);
 			thead.range = range;
 			testData.set(thead, data);
@@ -80,24 +82,27 @@ export class TestFile extends CakeTestData {
 		}
 
 		parseCakeTest(content, {
-			onTest: (range, name) => {
+			onTest: (range, name, isFlutter) => {
 				const parent = ancestors[ancestors.length - 1];
-				createObject(range, name, CakeTestCase, parent);
+				createObject(range, name, CakeTestCase, parent, isFlutter);
 			},
-			onGroup: (range, name) => {
+			onGroup: (range, name, isFlutter) => {
 				const parent = ancestors[ancestors.length - 1];
-				const thead = createObject(range, name, CakeGroup, parent);
+				const thead = createObject(range, name, CakeGroup, parent, isFlutter);
 				ancestors.push({ item: thead, children: [] });
 			},
-			onTestRunner: (range, name) => {
+			onTestRunner: (range, name, isFlutter) => {
+				if (isFlutter) {
+					this.isFlutter = true;
+				}
 				const parent = ancestors[0];
-				const thead = createObject(range, name, CakeTestRunner, parent);
+				const thead = createObject(range, name, CakeTestRunner, parent, isFlutter);
 				ancestors.push({ item: thead, children: [] });
 			},
 			onAscend: () => {
 				const finished = ancestors.pop()!;
 				finished.item.children.replace(finished.children);
-			}
+			},
 		});
 
         // Finish and assign children for all remaining items

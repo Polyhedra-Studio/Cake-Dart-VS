@@ -1,30 +1,31 @@
 import * as vscode from 'vscode';
 
 const testRunnerRe = /(\s+)TestRunner(Default)?(Of)?\b/;
+const flutterTestRunnerRe = /(\s+)FlutterTestRunner\b/;
 const groupRe = /(\s+)Group(Of)?\b/;
 const testRe = /(\s+)Test(Of)?\b/;
 const hasNameRe = /(["'])((?:\\1|(?:(?!\1)).)*)(\1|$)/;
 
 export const parseCakeTest = (text: string, events: {
-    onTest(range: vscode.Range, testName: string): void;
-    onTestRunner(range: vscode.Range, testRunnerName: string): void;
-    onGroup(range: vscode.Range, groupName: string): void;
+    onTest(range: vscode.Range, testName: string, isFlutter: boolean): void;
+    onTestRunner(range: vscode.Range, testRunnerName: string, isFlutter: boolean): void;
+    onGroup(range: vscode.Range, groupName: string, isFlutter: boolean): void;
 	onAscend(): void;
 }) => {
     const lines = text.split('\n');
 	let foundItem: {
 		index: number,
-		event: ((range: vscode.Range, name: string) => void),
+		event: ((range: vscode.Range, name: string, isFlutter: boolean) => void),
 	} | null = null;
 
 	// Finds a trailing test title if it exists in a new line different than the test item.
-	const matchName = (line: string, rangeIndex: number): boolean => {
+	const matchName = (line: string, rangeIndex: number, isFlutter: boolean): boolean => {
 		if (foundItem) {
 			const hasName = hasNameRe.exec(line);
 			if (hasName) {
 				const [match, , name] = hasName;
 				const range = new vscode.Range(new vscode.Position(foundItem.index, 0), new vscode.Position(rangeIndex, match.length));
-				foundItem.event(range, name);
+				foundItem.event(range, name, isFlutter);
 				foundItem = null;
 				return true;
 			}
@@ -35,9 +36,10 @@ export const parseCakeTest = (text: string, events: {
 	// Returns the matching result for digging out the where the opening bracket to watch should be
 	const testForItem = (
 		itemRe: RegExp, 
-		event: (range: vscode.Range, name: string) => void,
+		event: (range: vscode.Range, name: string, isFlutter: boolean) => void,
 		line: string,
 		index: number,
+		isFlutter: boolean,
 	): string => {
 		const reTestResult = itemRe.exec(line);
 		if (reTestResult) {
@@ -46,11 +48,11 @@ export const parseCakeTest = (text: string, events: {
 			if (hasName) {
 				const [match, , name] = hasName;
 				const range = new vscode.Range(new vscode.Position(index, 0), new vscode.Position(index, match.length));
-				event(range, name);
+				event(range, name, isFlutter);
 			} else {
 				foundItem = {
 					index,
-					event
+					event,
 				};
 			}
 			const [matchResult] = reTestResult;
@@ -61,6 +63,7 @@ export const parseCakeTest = (text: string, events: {
 
 	const bracketWatch = [];
 	let bracketIndex = 0;
+	let isFlutter = false;
 
 	// Read each line in the file, and look for the start of a test, group, or test runner.
 	for (let lineNo = 0; lineNo < lines.length; lineNo++) {
@@ -68,17 +71,26 @@ export const parseCakeTest = (text: string, events: {
 		let matchWatch: string = '';
 
 		// First, check for TestRunner as this is the base of the tree
-		matchWatch = testForItem(testRunnerRe, events.onTestRunner, line, lineNo);
-		if (!matchWatch) {
-			// Check against groups since that's next on the tree
-			matchWatch = testForItem(groupRe, events.onGroup, line, lineNo);
+		// Try for FlutterTestRunner first since it's more specific
+		// This tests whether this is a Flutter test, so isFlutter is not set yet,
+		// and which is why the isFlutter flag passed as true
+		matchWatch = testForItem(flutterTestRunnerRe, events.onTestRunner, line, lineNo, true);
+
+		if (matchWatch) {
+			isFlutter = true;
+		} else {
+			matchWatch = testForItem(testRunnerRe, events.onTestRunner, line, lineNo, isFlutter);
 			if (!matchWatch) {
-				// Check for if this is a title for a test item that existed on a new line.
-				const found = matchName(line, lineNo);
-				if (!found) {
-					// Finally, check if this is a test
-					// This function intentionally does not set matchWatch as we only want to groups or test runners stored
-					testForItem(testRe, events.onTest, line, lineNo);
+				// Check against groups since that's next on the tree
+				matchWatch = testForItem(groupRe, events.onGroup, line, lineNo, isFlutter);
+				if (!matchWatch) {
+					// Check for if this is a title for a test item that existed on a new line.
+					const found = matchName(line, lineNo, isFlutter);
+					if (!found) {
+						// Finally, check if this is a test
+						// This function intentionally does not set matchWatch as we only want to groups or test runners stored
+						testForItem(testRe, events.onTest, line, lineNo, isFlutter);
+					}
 				}
 			}
 		}

@@ -3,15 +3,24 @@ import { exec } from 'node:child_process';
 
 import { CakeDebugRunner } from '../cake-debugger';
 import { parseResults } from '../cake-parser';
+import { CakeFlutterDebugRunner } from '../cake-flutter-debugger';
 
 export abstract class CakeTestData {
     protected abstract dartDefineArgs(): string | undefined;
     public abstract ready: boolean;
+	protected isFlutter: boolean = false;
 
-	public async run(item: vscode.TestItem, options: vscode.TestRun, debugMode: boolean = false,): Promise<void> {
+	public async run(
+		item: vscode.TestItem,
+		options: vscode.TestRun,
+		debugMode: boolean = false,
+	): Promise<void> {
 
-		let cmd: string = `dart run ${this.dartDefineArgs() ? this.dartDefineArgs() : ''} ${item.uri!.path}`;
-		const debugRunner = debugMode ? new CakeDebugRunner() : undefined;
+		const action: string = this.isFlutter ? 'flutter test' : 'dart run';
+		let cmd: string = `${action} ${this.dartDefineArgs() ? this.dartDefineArgs() : ''} ${item.uri!.path}`;
+		const debugRunner = debugMode ? 
+			(this.isFlutter ? new CakeFlutterDebugRunner() : new CakeDebugRunner())
+			: undefined;
 
 		const parseStderr = (output: string) => {
 			const message = new vscode.TestMessage(`Internal error\n${output}`);
@@ -20,11 +29,16 @@ export abstract class CakeTestData {
 		}
 
 		const parseStdout = (output: string) => {
-			const sanitizedOutput = output
-			.replaceAll('[32m', '')
-			.replaceAll('[31m', '')
-			.replaceAll('[90m', '')
-			.replaceAll('[0m', '');
+			const strippedOutput = output
+				.split('\n')
+				.filter(line => line.startsWith('[32m') || line.startsWith('[31m') || line.startsWith('[90m') || line.startsWith('[0m'))
+				.join('\n');
+
+			const sanitizedOutput = strippedOutput
+				.replaceAll('[32m', '')
+				.replaceAll('[31m', '')
+				.replaceAll('[90m', '')
+				.replaceAll('[0m', '');
 
 			const passedRecursive = (recursiveParent: vscode.TestItem) => {
 				options.passed(recursiveParent);
@@ -36,7 +50,7 @@ export abstract class CakeTestData {
 				options.failed(recursiveParent, message);
 
 				recursiveParent.children.forEach(child => {
-					const errorMessage = parseResults(output, child.label);
+					const errorMessage = parseResults(strippedOutput, child.label);
 					if (errorMessage) {
 						failedRecursive(child);
 					} else {
@@ -50,21 +64,22 @@ export abstract class CakeTestData {
 			}
 
 			// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
-			if (output.startsWith('[32m')) {
+			if (strippedOutput.startsWith('[32m')) {
 				passedRecursive(item);
 			}
 
-			if (output.startsWith('[31m')) {
+			if (strippedOutput.startsWith('[31m')) {
 				failedRecursive(item);
 			}
 
-			if (output.startsWith('[90m')) {
+			if (strippedOutput.startsWith('[90m')) {
 				neutralRecursive(item);
 			}
 		};
 
-		const execute = (resolve: any) => {
-			exec(cmd, (error, stdout, stderr) => {
+		const execute = (resolve: any, cwd: string | undefined = undefined) => {
+			exec(
+				cmd, { cwd: cwd }, (error, stdout, stderr) => {
 				if (stderr) {
 					parseStderr(stderr);
 				}
@@ -77,21 +92,20 @@ export abstract class CakeTestData {
 		}
 
 		const promise = new Promise<void>((resolve, reject) => {
-			if (debugMode) {
-				const workspace = vscode.workspace.getWorkspaceFolder(item.uri!);
-				if (!workspace) {
-					parseStderr('Cannot find workspace folder.');
-					resolve();
-				}
+			const workspace = vscode.workspace.getWorkspaceFolder(item.uri!);
+			if (!workspace) {
+				parseStderr('Cannot find workspace folder.');
+				resolve();
+			}
 
-				// Launch style
+			if (debugMode) {
 				debugRunner?.startLaunch(item, workspace!, this.dartDefineArgs()).then(() => {
 					vscode.debug.onDidTerminateDebugSession((session) => {
-						execute(resolve);
+						execute(resolve, workspace?.uri.fsPath);
 					});
 				});
 			} else {
-				execute(resolve);
+				execute(resolve, workspace?.uri.fsPath);
 			}
 		});
 		return promise;

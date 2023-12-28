@@ -5,7 +5,7 @@ import { Workspace } from './models/workspace';
 import { CakeTestData } from './models/cake-test-data';
 
 export async function activate(context: vscode.ExtensionContext) {
-	const ctrl = vscode.tests.createTestController('cakeDartTester', 'Cake Dart Tester');
+	const ctrl = vscode.tests.createTestController('cakeDartFlutterTester', 'Cake Dart & Flutter Tester');
 	context.subscriptions.push(ctrl);
 
 	const runHandler = (request: vscode.TestRunRequest, cancellation: vscode.CancellationToken, debugMode: boolean = false) => {

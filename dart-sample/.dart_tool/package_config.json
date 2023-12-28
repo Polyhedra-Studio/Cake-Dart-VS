@@ -1,0 +1,20 @@
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "cake",
+      "rootUri": "file:///Users/cassandra/.pub-cache/hosted/http%2558%2547%2547butterfree.lan%255830117/cake-5.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "cake_vs_sample_tests",
+      "rootUri": "../",
+      "packageUri": "lib/",
+      "languageVersion": "2.16"
+    }
+  ],
+  "generated": "2023-11-13T02:31:53.488410Z",
+  "generator": "pub",
+  "generatorVersion": "3.1.0"
+}

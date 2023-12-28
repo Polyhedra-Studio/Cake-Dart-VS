@@ -6,12 +6,13 @@ export abstract class CakeTestItem extends CakeTestData {
 
 	constructor(
 		protected readonly name: string,
+		protected readonly isFlutter: boolean,
 	) {
 		super();
 	}
 
 	protected dartDefineArgs(): string | undefined {
-		return `--define=${this.propertyToSearchFor}='${this.name}'`;
+		return `--${this.isFlutter ? 'dart-' : ''}define=${this.propertyToSearchFor}='${this.name}'`;
 	}
 
 	public getLabel() {

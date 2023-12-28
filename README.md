@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="https://github.com/Polyhedra-Studio/Cake-Dart-VS/blob/main/images/cake_logo.png?raw=true" alt="Cake Tester Logo" width="256" />
+    <img src="https://github.com/Polyhedra-Studio/Cake-Dart-VS/blob/main/images/cake_logo.png?raw=true" alt="Cake Tester Logo" width="128" />
     <h1> Cake Test Runner for Visual Studio Code</h1>
     <p><a href="https://github.com/Polyhedra-Studio/Cake" _target="blank">Learn more about Cake, the lightweight, explicit testing framework for Dart & Flutter.</a></p>
 </div>
@@ -32,6 +32,34 @@ You can run or debug files, Test Runners, Groups, or Tests directly from the cod
 <div align="center">
     <img src="https://github.com/Polyhedra-Studio/Cake-Dart-VS/blob/main/images/demo.gif?raw=true" alt="Test Explorer demo in VS Code" />
 </div>
+
+### Snippets
+
+- General
+    - `cake-runner` - Cake Test File without Context.
+    - `cake-runner-context` - Cake Test File with Context.
+    - `cake-group` - A group stub.
+    - `cake-test` - A test with action and assertions.
+- Flutter
+    - `cake-flutter` - Cake Test File for Flutter.
+
+- Expects
+    - General
+        - `cake-ex-eq` - Equals Expect.
+        - `cake-ex-ne` - Not Equals Expect.
+        - `cake-ex-t` - Is True Expect.
+        - `cake-ex-f` - Is False Expect.
+        - `cake-ex-n` - Is Null Expect.
+        - `cake-ex-nn` - Is Not Null Expect.
+        - `cake-ex-type` - Is Type Expect.
+    - Flutter
+        - `cake-ex-wtype` - Is Widget Type Expect.
+        - `cake-ex-find` - Find Match Expect.
+        - `cake-ex-find-ln` - Finds At Least N Widgets Match Expect.
+        - `cake-ex-find-n` - Finds N Widgets Match Expect.
+        - `cake-ex-find-no` - Finds Nothing Match Expect.
+        - `cake-ex-find-o` - Finds One Widget Match Expect.
+        - `cake-ex-find-w` - Finds Widgets Match Expect.
 
 ## Feedback
 

@@ -1,7 +1,14 @@
+# 2.0.0
+- [ADD] Added [Cake_Flutter](https://pub.dev/packages/cake_flutter) support!
+- [ADD][Snippets] Added snippets for Cake Flutter tests and expects.
+- [FIX][Snippets] [#1](https://github.com/Polyhedra-Studio/Cake-Dart-VS/issues/1): Fixed missing "," on Cake Test snippet
+- [MOD][Snippets] Removed Groups from being generated on Test File snippets.
+- [META] Updated README.md with snippet information
+
 # 1.1.0
 - [META] Fix images so they appear correctly outside of github
 - [META] Existing Cake files are no longer needed to use extension
-- [ADD] Added snippets for Test Runner, Groups, Test, and Expects.
+- [ADD][Snippets] Added snippets for Test Runner, Groups, Test, and Expects.
 - [ADD] Added support for multiple workspaces.
 
 # 1.0.0

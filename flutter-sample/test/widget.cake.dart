@@ -4,7 +4,7 @@ import 'package:flutter_sample/main.dart';
 
 void main() {
   FlutterTestRunner(
-    'Counter increments smoke test',
+    'Counter',
     [
       Test(
         'Counter should start at zero',

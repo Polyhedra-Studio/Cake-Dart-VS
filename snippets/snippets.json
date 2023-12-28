@@ -5,15 +5,13 @@
             "import 'package:cake/cake.dart';",
             "",
             "void main() async {",
-            "   TestRunnerDefault('$1', [",
-            "       Group('$2', [",
-            "           Test('$3',",
-            "               action: (test) => true,",
-            "               assertions: (test) => [",
-            "                   Expect.isTrue(test.actual),",
-            "               ],",
-            "           ),",
-            "       ]),",
+            "    TestRunnerDefault('$1', [",
+            "        Test('$2',",
+            "            action: (test) => true,",
+            "            assertions: (test) => [",
+            "                Expect.isTrue(test.actual),",
+            "            ],",
+            "        ),",
             "    ]);",
             "}",
             ""
@@ -26,15 +24,13 @@
             "import 'package:cake/cake.dart';",
             "",
             "void main() async {",
-            "   TestRunner<$1>('$2 Tests', [",
-            "       Group('$3', [",
-            "           Test('$4',",
-            "               action: (test) => true",
-            "               assertions: (test) => [",
-            "                   Expect.isTrue(test.actual),",
-            "               ],",
-            "           ),",
-            "       ]),",
+            "    TestRunner<$1>('$2 Tests', [",
+            "        Test('$2',",
+            "            action: (test) => true,",
+            "            assertions: (test) => [",
+            "                Expect.isTrue(test.actual),",
+            "            ],",
+            "        ),",
             "    ],",
             "    contextBuilder: $1.new,",
             "    );",
@@ -49,11 +45,35 @@
         ],
         "description": "Generate a Test Runner with a Context"
     },
+    "Cake Flutter Test File": {
+        "prefix": "cake-flutter",
+        "body": [
+            "import 'package:cake_flutter/cake_flutter.dart';",
+            "",
+            "void main() async {",
+            "    FlutterTestRunner(",
+            "        '$1', [",
+            "            Test('$2',",
+            "                action: (test) => true,",
+            "                assertions: (test) => [",
+            "                    Expect.isTrue(test.actual),",
+            "                ],",
+            "            ),",
+            "        ],",
+            "        setup: (test) async {",
+            "            await test.setApp(const $3());",
+            "        },",
+            "    );",
+            "}",
+            ""
+        ],
+        "description": "Generate a Cake Flutter Test File"
+    },
     "Cake Group": {
         "prefix": "cake-group",
         "body": [
             "Group('$1', [",
-            "   $0",
+            "    $0",
             "]),"
         ],
         "description": "Generate a group of tests"
@@ -62,10 +82,10 @@
         "prefix": "cake-test",
         "body": [
             "Test('$1',",
-            "   action: (test) => $2",
-            "   assertions: (test) => [",
-            "       $0",
-            "   ],",
+            "    action: (test) => $2,",
+            "    assertions: (test) => [",
+            "        $0",
+            "    ],",
             "),"
         ],
         "description": "Generate a test"
@@ -118,5 +138,54 @@
             "Expect<$1>.isType($2),"
         ],
         "description": "Generate a Is Type Expect"
+    },
+    "Cake Flutter Expect is Widget Type": {
+        "prefix": "cake-ex-wtype",
+        "body": [
+            "FlutterExpect<$1>.isWidgetType($2),"
+        ],
+        "description": "Generate a Is Widget Type Expect"
+    },
+    "Cake Flutter Expect Find Match": {
+        "prefix": "cake-ex-find",
+        "body": [
+            "FlutterExpect.findMatch(find: $1, match: $2),"
+        ],
+        "description": "Generate a Find Match Expect"
+    },
+    "Cake Flutter Expect Finds At Least N Widgets": {
+        "prefix": "cake-ex-find-ln",
+        "body": [
+            "FlutterExpect.findsAtLeastNWidgets(find: $1, n: $2),"
+        ],
+        "description": "Generate a Finds N Widgets Expect"
+    },
+    "Cake Flutter Expect Finds N Widgets": {
+        "prefix": "cake-ex-find-n",
+        "body": [
+            "FlutterExpect.findsNWidgets(find: $1, n: $2),"
+        ],
+        "description": "Generate a Finds N Widgets Expect"
+    },
+    "Cake Flutter Expect Finds Nothing": {
+        "prefix": "cake-ex-find-no",
+        "body": [
+            "FlutterExpect.findsNothing($1),"
+        ],
+        "description": "Generate a Finds Nothing Expect"
+    },
+    "Cake Flutter Expect Finds One Widget": {
+        "prefix": "cake-ex-find-o",
+        "body": [
+            "FlutterExpect.findsOneWidget($1),"
+        ],
+        "description": "Generate a Finds One Widget Expect"
+    },
+    "Cake Flutter Expect Finds Widgets": {
+        "prefix": "cake-ex-find-w",
+        "body": [
+            "FlutterExpect.findsWidgets($1),"
+        ],
+        "description": "Generate a Finds Widgets Expect"
     }
 }

@@ -25,10 +25,11 @@ export abstract class CakeTestData {
 		}
 
 		const parseStdout = (output: string) => {
+			// Ignore lines that have a timestamp. This is given by the 
+			// Flutter test runner and should be ignored.
 			const strippedOutput = output
-				.split('\n')
-				.filter(line => line.startsWith('[32m') || line.startsWith('[31m') || line.startsWith('[90m') || line.startsWith('[0m'))
-				.join('\n');
+				.replaceAll(/^\d+:\d+ \+\d+.*/gm, '')
+				.trim();
 
 			const sanitizedOutput = strippedOutput
 				.replaceAll('[32m', '')
@@ -62,14 +63,13 @@ export abstract class CakeTestData {
 			// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
 			if (strippedOutput.startsWith('[32m')) {
 				passedRecursive(item);
-			}
-
-			if (strippedOutput.startsWith('[31m')) {
+			} else if (strippedOutput.startsWith('[31m')) {
 				failedRecursive(item);
-			}
-
-			if (strippedOutput.startsWith('[90m')) {
+			} if (strippedOutput.startsWith('[90m')) {
 				neutralRecursive(item);
+			} else {
+				// Likely this is some sort of system error or message, make sure to display something
+				failedRecursive(item);
 			}
 		};
 

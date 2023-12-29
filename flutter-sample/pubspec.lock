@@ -85,10 +85,10 @@ packages:
     dependency: "direct dev"
     description:
       name: cake_flutter
-      sha256: caf68c8c77638ac195b15a2f9f24594544ac5696038c4e3fbe96fa375b4fcae3
+      sha256: e40d3ad3194a1ebf3be915319215161ec3ec987b81bd1a69f62d0b042fd5eb0a
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.2"
+    version: "0.3.3"
   characters:
     dependency: transitive
     description:

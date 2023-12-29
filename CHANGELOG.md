@@ -1,3 +1,8 @@
+# 2.0.1
+- [FIX][Runner] Fixed no error message being displayed to the user when test file errors before tests are ran.
+- [MOD][Runner] If Cake is not able to run on a test file for some reason, the response will come back as a test fail instead of skipped.
+- [META] Cleaned up some not needed files
+
 # 2.0.0
 - [ADD] Added [Cake_Flutter](https://pub.dev/packages/cake_flutter) support!
 - [ADD][Snippets] Added snippets for Cake Flutter tests and expects.

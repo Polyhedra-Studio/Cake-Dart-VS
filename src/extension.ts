@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { testData, TestFile } from './models/test-file';
-import { CakeTestCase } from './models/cake-test-item';
 import { Workspace } from './models/workspace';
 import { CakeTestData } from './models/cake-test-data';
 

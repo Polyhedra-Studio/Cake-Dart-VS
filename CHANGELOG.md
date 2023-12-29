@@ -1,3 +1,6 @@
+# 2.0.2
+- [FIX][Runner] Fixed regression bug from 2.0.1 that caused successful tests to return as failures
+
 # 2.0.1
 - [FIX][Runner] Fixed no error message being displayed to the user when test file errors before tests are ran.
 - [MOD][Runner] If Cake is not able to run on a test file for some reason, the response will come back as a test fail instead of skipped.

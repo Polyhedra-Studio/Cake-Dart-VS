@@ -29,6 +29,7 @@ export abstract class CakeTestData {
 			// Flutter test runner and should be ignored.
 			const strippedOutput = output
 				.replaceAll(/^\d+:\d+ \+\d+.*/gm, '')
+				.replaceAll('\r', '')
 				.trim();
 
 			const sanitizedOutput = strippedOutput
@@ -62,15 +63,19 @@ export abstract class CakeTestData {
 
 			// We _could_ run some fancy regex to determine if it failed or not _or_ we can just look at what color it is
 			if (strippedOutput.startsWith('[32m')) {
-				passedRecursive(item);
-			} else if (strippedOutput.startsWith('[31m')) {
-				failedRecursive(item);
-			} if (strippedOutput.startsWith('[90m')) {
-				neutralRecursive(item);
-			} else {
-				// Likely this is some sort of system error or message, make sure to display something
-				failedRecursive(item);
+				return passedRecursive(item);
 			}
+			
+			if (strippedOutput.startsWith('[31m')) {
+				return failedRecursive(item);
+			}
+			
+			if (strippedOutput.startsWith('[90m')) {
+				return neutralRecursive(item);
+			}
+			// Likely this is some sort of system error or message, make sure to display something
+			return failedRecursive(item);
+			
 		};
 
 		const execute = (resolve: any, cwd: string | undefined = undefined) => {

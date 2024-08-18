@@ -7,19 +7,21 @@ export class CakeDebugRunner {
         runArg: string | undefined,
         isFlutter: boolean,
     ) {
+        const path: string = '"' + item.uri?.path + '"';
+        const cwd: string = '"' + workspaceFolder.uri.path + '"';
         const config: vscode.DebugConfiguration = isFlutter ? {
             type: 'dart',
             name: 'Cake Debugger (Flutter)',
             request: 'launch',
-            cwd: workspaceFolder.uri.path,
-            program: item.uri?.path,
+            cwd: cwd,
+            program: path,
             toolArgs: runArg,
             deviceId: 'flutter-tester',
         } : {
             type: 'dart',
             name: 'Cake Debugger',
             request: 'launch',
-            program: item.uri?.path,
+            program: path,
             toolArgs: runArg,
         };
         return vscode.debug.startDebugging(workspaceFolder, config, { noDebug: false });

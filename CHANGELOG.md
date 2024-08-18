@@ -1,3 +1,6 @@
+# 2.0.3 (2024-08-18)
+- [FIX][Runner] Fixed a bug where workspaces or folders with spaces in it would cause the debugger to not find the test file.
+
 # 2.0.2
 - [FIX][Runner] Fixed regression bug from 2.0.1 that caused successful tests to return as failures
 

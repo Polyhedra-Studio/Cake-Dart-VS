@@ -16,7 +16,7 @@ export abstract class CakeTestData {
 	): Promise<void> {
 
 		const action: string = this.isFlutter ? 'flutter test' : 'dart run';
-		let cmd: string = `${action} ${this.dartDefineArgs() ? this.dartDefineArgs() : ''} ${item.uri!.path}`;
+		let cmd: string = `${action} ${this.dartDefineArgs() ? this.dartDefineArgs() : ''} '${item.uri!.path}'`;
 
 		const parseStderr = (output: string) => {
 			const message = new vscode.TestMessage(`Internal error\n${output}`);

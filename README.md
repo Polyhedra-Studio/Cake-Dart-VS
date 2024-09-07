@@ -33,6 +33,14 @@ You can run or debug files, Test Runners, Groups, or Tests directly from the cod
     <img src="https://github.com/Polyhedra-Studio/Cake-Dart-VS/blob/main/images/demo.gif?raw=true" alt="Test Explorer demo in VS Code" />
 </div>
 
+### Coverage
+
+Cake supports native VS Code coverage tools. Currently this is only supported for Flutter files.
+
+<div align="center">
+    <img src="https://github.com/Polyhedra-Studio/Cake-Dart-VS/blob/main/images/coverage.png?raw=true" alt="Coverage demo in VS Code" />
+</div>
+
 ### Snippets
 
 - General
@@ -52,6 +60,11 @@ You can run or debug files, Test Runners, Groups, or Tests directly from the cod
         - `cake-ex-n` - Is Null Expect.
         - `cake-ex-nn` - Is Not Null Expect.
         - `cake-ex-type` - Is Type Expect.
+    - Mocks
+        - `cake-mock-c` - Mock Called Expect.
+        - `cake-mock-o` - Mock Called Once Expect.
+        - `cake-mock-n` - Mock Called N Times Expect.
+        - `cake-mock-nc` - Mock Not Called Expect.
     - Flutter
         - `cake-ex-wtype` - Is Widget Type Expect.
         - `cake-ex-find` - Find Match Expect.
@@ -60,6 +73,17 @@ You can run or debug files, Test Runners, Groups, or Tests directly from the cod
         - `cake-ex-find-no` - Finds Nothing Match Expect.
         - `cake-ex-find-o` - Finds One Widget Match Expect.
         - `cake-ex-find-w` - Finds Widgets Match Expect.
+        - `cake-ex-search` - Search Has Some Widgets Expect.
+        - `cake-ex-search-o` - Search Has One Widget Expect.
+        - `cake-ex-search-n` - Search Has N Widgets Expect.
+        - `cake-ex-search-no` - Search Has No Widgets Expect.
+    - Snapshot (Flutter Only)
+        - `cake-ex-snap-m` - Snapshot Matches Expect.
+        - `cake-ex-snap-g` - Snapshot Matches Golden Expect.
+        - `cake-ex-snap-a` - All Snapshots Match Expect.
+        - `cake-ex-snap-eq` - Snapshot Is Equal Expect.
+        - `cake-ex-snap-ne` - Snapshot Is Not Equal Expect.
+
 
 ## Feedback
 

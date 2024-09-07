@@ -16,7 +16,7 @@
     "Cake Flutter Snapshots All Match": {
         "prefix": "cake-ex-snap-a",
         "body": [
-            "FlutterExpect.snapshotsMatch(test.snapshots),"
+            "...FlutterExpect.snapshotsMatch(test.snapshots),"
         ],
         "description": "Generate a Snapshots Match Expect"
     },

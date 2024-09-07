@@ -7,8 +7,8 @@ export class CakeDebugRunner {
         runArg: string | undefined,
         isFlutter: boolean,
     ) {
-        const path: string = '"' + item.uri?.path + '"';
-        const cwd: string = '"' + workspaceFolder.uri.path + '"';
+        const path: string = item.uri?.path ?? '';
+        const cwd: string = workspaceFolder.uri.path;
         const config: vscode.DebugConfiguration = isFlutter ? {
             type: 'dart',
             name: 'Cake Debugger (Flutter)',

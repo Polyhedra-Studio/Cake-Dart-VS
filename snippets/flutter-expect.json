@@ -1,0 +1,79 @@
+{
+    "Cake Flutter Expect is Widget Type": {
+        "prefix": "cake-ex-wtype",
+        "body": [
+            "FlutterExpect<$1>.isWidgetType($2),"
+        ],
+        "description": "Generate a Is Widget Type Expect"
+    },
+    "Cake Flutter Expect Find Match": {
+        "prefix": "cake-ex-find",
+        "body": [
+            "FlutterExpect.findMatch(find: $1, match: $2),"
+        ],
+        "description": "Generate a Find Match Expect"
+    },
+    "Cake Flutter Expect Finds At Least N Widgets": {
+        "prefix": "cake-ex-find-ln",
+        "body": [
+            "FlutterExpect.findsAtLeastNWidgets(find: $1, n: $2),"
+        ],
+        "description": "Generate a Finds N Widgets Expect"
+    },
+    "Cake Flutter Expect Finds N Widgets": {
+        "prefix": "cake-ex-find-n",
+        "body": [
+            "FlutterExpect.findsNWidgets(find: $1, n: $2),"
+        ],
+        "description": "Generate a Finds N Widgets Expect"
+    },
+    "Cake Flutter Expect Finds Nothing": {
+        "prefix": "cake-ex-find-no",
+        "body": [
+            "FlutterExpect.findsNothing($1),"
+        ],
+        "description": "Generate a Finds Nothing Expect"
+    },
+    "Cake Flutter Expect Finds One Widget": {
+        "prefix": "cake-ex-find-o",
+        "body": [
+            "FlutterExpect.findsOneWidget($1),"
+        ],
+        "description": "Generate a Finds One Widget Expect"
+    },
+    "Cake Flutter Expect Finds Widgets": {
+        "prefix": "cake-ex-find-w",
+        "body": [
+            "FlutterExpect.findsWidgets($1),"
+        ],
+        "description": "Generate a Finds Widgets Expect"
+    },
+    "Cake Flutter Expect Search Has None": {
+        "prefix": "cake-ex-search-n",
+        "body": [
+            "FlutterExpect.searchHasNone(test.search.$1),"
+        ],
+        "description": "Generate a Search Has None Expect"
+    },
+    "Cake Flutter Expect Search Has One": {
+        "prefix": "cake-ex-search-o",
+        "body": [
+            "FlutterExpect.searchHasOne(test.search.$1),"
+        ],
+        "description": "Generate a Search Has One Expect"
+    },
+    "Cake Flutter Expect Search Has Widgets": {
+        "prefix": "cake-ex-search-w",
+        "body": [
+            "FlutterExpect.searchHasSome(test.search.$1),"
+        ],
+        "description": "Generate a Search Has Some Expect"
+    },
+    "Cake Flutter Expect Search Has N Widgets": {
+        "prefix": "cake-ex-search-n",
+        "body": [
+            "FlutterExpect.searchHasN(test.search.$1, n: $2),"
+        ],
+        "description": "Generate a Search Has N Widgets Expect"
+    }
+}

@@ -3,7 +3,7 @@
   "packages": [
     {
       "name": "cake",
-      "rootUri": "file:///Users/cassandra/.pub-cache/hosted/http%2558%2547%2547butterfree.lan%255830117/cake-5.0.1",
+      "rootUri": "file:///Users/cassandra/.pub-cache/hosted/pub.dev/cake-6.1.0",
       "packageUri": "lib/",
       "languageVersion": "2.17"
     },
@@ -14,7 +14,10 @@
       "languageVersion": "2.16"
     }
   ],
-  "generated": "2023-11-13T02:31:53.488410Z",
+  "generated": "2024-08-23T19:31:30.981070Z",
   "generator": "pub",
-  "generatorVersion": "3.1.0"
+  "generatorVersion": "3.4.3",
+  "flutterRoot": "file:///Users/cassandra/Documents/dev/flutter",
+  "flutterVersion": "3.22.2",
+  "pubCache": "file:///Users/cassandra/.pub-cache"
 }

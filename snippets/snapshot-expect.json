@@ -1,0 +1,37 @@
+{
+    "Cake Flutter Snapshot Matches": {
+        "prefix": "cake-ex-snap-m",
+        "body": [
+            "FlutterExpect.snapshotMatches(test.snapshots[$1]),"
+        ],
+        "description": "Generate a Snapshot Matches Expect"
+    },
+    "Cake Flutter Snapshot Matches Golden": {
+        "prefix": "cake-ex-snap-g",
+        "body": [
+            "FlutterExpect.matchesGolden(test.snapshots[$1]),"
+        ],
+        "description": "Generate a Matches Golden Expect"
+    },
+    "Cake Flutter Snapshots All Match": {
+        "prefix": "cake-ex-snap-a",
+        "body": [
+            "FlutterExpect.snapshotsMatch(test.snapshots),"
+        ],
+        "description": "Generate a Snapshots Match Expect"
+    },
+    "Cake Flutter Snapshot Is Equal": {
+        "prefix": "cake-ex-snap-eq",
+        "body": [
+            "FlutterExpect.snapshotIsEqual(actual: test.snapshots[$1], expected: $2),"
+        ],
+        "description": "Generate a Snapshot Is Equal Expect"
+    },
+    "Cake Flutter Snapshot Is Not Equal": {
+        "prefix": "cake-ex-snap-ne",
+        "body": [
+            "FlutterExpect.snapshotIsNotEqual(actual: test.snapshots[$1], notExpected: $2),"
+        ],
+        "description": "Generate a Snapshot Is Not Equal Expect"
+    }
+}

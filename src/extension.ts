@@ -1,63 +1,40 @@
 import * as vscode from 'vscode';
 import { testData, TestFile } from './models/test-file';
 import { Workspace } from './models/workspace';
-import { CakeTestData } from './models/cake-test-data';
+import { CakeRunHandler } from './run-handler';
+import { DebugHandler } from './debug/debug-handler';
+import { CoverageRunHandler } from './coverage/coverage-handler';
+import { CoverageLoader } from './coverage/coverage-loader';
 
 export async function activate(context: vscode.ExtensionContext) {
 	const ctrl = vscode.tests.createTestController('cakeDartFlutterTester', 'Cake Dart & Flutter Tester');
 	context.subscriptions.push(ctrl);
 
-	const runHandler = (request: vscode.TestRunRequest, cancellation: vscode.CancellationToken, debugMode: boolean = false) => {
-		const queue: { test: vscode.TestItem; data: CakeTestData }[] = [];
-		const run = ctrl.createTestRun(request);
-
-		const discoverTests = async (tests: Iterable<vscode.TestItem>) => {
-			for (const test of tests) {
-				if (request.exclude?.includes(test)) {
-					continue;
-				}
-
-				const data: CakeTestData | undefined = testData.get(test);
-				if (data) {
-					if (data instanceof Workspace) {
-						discoverTests(gatherTestItems(test.children));
-					} else {
-						run.enqueued(test);
-						queue.push({ test, data });
-					}
-				}
-			}
-		};
-
-		const runTestQueue = async () => {
-			for (const { test, data } of queue) {
-				if (cancellation.isCancellationRequested) {
-					run.skipped(test);
-				} else {
-					run.started(test);
-					await data.run(test, run, debugMode);
-				}
-			}
-
-			run.end();
-		};
-
-		const gatherTestItems = (collection: vscode.TestItemCollection) => {
-			const items: vscode.TestItem[] = [];
-			collection.forEach(item => items.push(item));
-			return items;
-		}
-
-		discoverTests(request.include ?? gatherTestItems(ctrl.items)).then(runTestQueue);
-	};
-
 	ctrl.refreshHandler = async () => {
 		await Promise.all(getWorkspaceTestPatterns().map(({ pattern }) => scanFiles(ctrl, pattern)));
 	};
 
-	ctrl.createRunProfile('Run Tests', vscode.TestRunProfileKind.Run, runHandler, true);
+	ctrl.createRunProfile(
+		'Run Tests',
+		vscode.TestRunProfileKind.Run,
+		(request, token) => new CakeRunHandler(ctrl, request, token).runHandler(),
+		true
+	);
 
-	ctrl.createRunProfile('Debug Tests', vscode.TestRunProfileKind.Debug, (request, token) => runHandler(request, token, true), false);
+	ctrl.createRunProfile(
+		'Debug Tests',
+		vscode.TestRunProfileKind.Debug,
+		(request, token) => new DebugHandler(ctrl, request, token).runHandler(),
+		false
+	);
+
+    const coverageProfile =	ctrl.createRunProfile(
+		'Run with Coverage',
+		vscode.TestRunProfileKind.Coverage,
+		(request, token) => new CoverageRunHandler(ctrl, request, token).runHandler(),
+		false
+	);
+	coverageProfile.loadDetailedCoverage = CoverageLoader.loadDetailedCoverage;
 
 	ctrl.resolveHandler = async item => {
 		if (!item) {
@@ -144,8 +121,8 @@ function startWatchingWorkspaces(controller: vscode.TestController) {
 	return getWorkspaceTestPatterns().map(({ workspaceFolder, pattern }) => {
 		const watcher = vscode.workspace.createFileSystemWatcher(pattern);
 		watcher.onDidChange(e => updateNodeForUri(controller, e)),
-		watcher.onDidCreate(e => createNodeForUri(controller, e)),
-		watcher.onDidDelete(e => removeNodeForUri(controller, e));
+			watcher.onDidCreate(e => createNodeForUri(controller, e)),
+			watcher.onDidDelete(e => removeNodeForUri(controller, e));
 
 		return watcher;
 	});

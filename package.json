@@ -2,7 +2,7 @@
 	"name": "cake-dart-flutter-vs",
 	"displayName": "Cake Tester for Dart & Flutter",
 	"description": "Cake test framework support for Dart & Flutter",
-	"version": "2.0.3",
+	"version": "2.1.0",
 	"publisher": "Polyhedra",
 	"private": true,
 	"license": "MPL-2.0",
@@ -22,7 +22,23 @@
 		"snippets": [
 			{
 				"language": "dart",
-				"path": "./snippets/snippets.json"
+				"path": "./snippets/objects.json"
+			},
+			{
+				"language": "dart",
+				"path": "./snippets/expect.json"
+			},
+			{
+				"language": "dart",
+				"path": "./snippets/flutter-expect.json"
+			},
+			{
+				"language": "dart",
+				"path": "./snippets/mock-expect.json"
+			},
+			{
+				"language": "dart",
+				"path": "./snippets/snapshot-expect.json"
 			}
 		]
 	},

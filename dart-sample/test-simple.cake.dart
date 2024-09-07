@@ -5,7 +5,7 @@ void main(List<String> arguments) async {
     // Generic Constructor
     Test('True is true - assertion',
         assertions: (context) => [
-              Expect(ExpectType.equals, expected: true, actual: true),
+              Expect.equals(actual: true, expected: true),
             ]),
     Test('True is true, set in setup',
         setup: (context) {

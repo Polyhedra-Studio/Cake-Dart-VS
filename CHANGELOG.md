@@ -1,3 +1,12 @@
+# 2.1.0 (2024-08-23)
+- [ADD][Coverage] Added native VS Code code coverage for Flutter tests.
+- [MOD][Runner] Refactored the run handler into its own file and broke out the debug into its own directory.
+- [FIX][Runner] Fixed an regression bug where debug mode wouldn't work for most files.
+- [ADD][Snippets] Added snippets for FlutterExpect.search functions
+- [ADD][Snippets] Added snippets for SnapshotExpect
+- [ADD][Snippets] Added snippets for MockExpect
+- [MOD][Snippets] Broke snippets out into their own files for different types
+
 # 2.0.3 (2024-08-18)
 - [FIX][Runner] Fixed a bug where workspaces or folders with spaces in it would cause the debugger to not find the test file.
 

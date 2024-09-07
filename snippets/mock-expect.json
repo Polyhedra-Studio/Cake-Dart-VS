@@ -1,0 +1,30 @@
+{
+    "Cake Expect Mock Called": {
+        "prefix": "cake-mock-c",
+        "body": [
+            "MockExpect.c(test.mock[$1]),"
+        ],
+        "description": "Generates a Mock Called Expect"
+    },
+    "Cake Expect Mock Called Once": {
+        "prefix": "cake-mock-o",
+        "body": [
+            "MockExpect.calledOnce(test.mock[$1]),"
+        ],
+        "description": "Generates a Mock Called Once Expect"
+    },
+    "Cake Expect Mock Called N Times": {
+        "prefix": "cake-mock-n",
+        "body": [
+            "MockExpect.calledNTimes(test.mock[$1], n: $2),"
+        ],
+        "description": "Generates a Mock Called N Times Expect"
+    },
+    "Cake Expect Mock Not Called": {
+        "prefix": "cake-mock-nc",
+        "body": [
+            "MockExpect.notCalled(test.mock[$1]),"
+        ],
+        "description": "Generates a Mock Not Called Expect"
+    }
+}

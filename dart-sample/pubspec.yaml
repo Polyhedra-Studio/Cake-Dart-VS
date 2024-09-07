@@ -7,6 +7,4 @@ environment:
   sdk: '>=2.16.2 <3.0.0'
 
 dependencies:
-  cake:
-    version: ^5.0.1
-    hosted: http://butterfree.lan:30117
+  cake: ^6.1.0

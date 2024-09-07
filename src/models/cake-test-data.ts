@@ -1,23 +1,33 @@
 import * as vscode from 'vscode';
 import { exec } from 'node:child_process';
 
-import { CakeDebugRunner } from '../cake-debugger';
+import { CakeDebugRunner } from '../debug/cake-debugger';
 import { parseResults } from '../cake-parser';
 
 export abstract class CakeTestData {
     protected abstract dartDefineArgs(): string | undefined;
     public abstract ready: boolean;
 	protected isFlutter: boolean = false;
+	public get isFlutterTest(): boolean {
+		return this.isFlutter;
+	}
 
 	public async run(
 		item: vscode.TestItem,
 		options: vscode.TestRun,
 		debugMode: boolean = false,
+		includeCoverage: boolean = false
 	): Promise<void> {
 
 		const action: string = this.isFlutter ? 'flutter test' : 'dart run';
-		let cmd: string = `${action} ${this.dartDefineArgs() ? this.dartDefineArgs() : ''} '${item.uri!.path}'`;
+		let coverageArgs = '';
+		if (includeCoverage) {
+			if (this.isFlutter) {
+				coverageArgs = ` --coverage --branch-coverage --coverage-path=coverage/cake/${item.label}.info`;
+			}
+		}
 
+		let cmd: string = `${action}${coverageArgs} ${this.dartDefineArgs() ? this.dartDefineArgs() : ''} '${item.uri!.path}'`;
 		const parseStderr = (output: string) => {
 			const message = new vscode.TestMessage(`Internal error\n${output}`);
 			message.location = new vscode.Location(item.uri!, item.range!);
@@ -75,7 +85,6 @@ export abstract class CakeTestData {
 			}
 			// Likely this is some sort of system error or message, make sure to display something
 			return failedRecursive(item);
-			
 		};
 
 		const execute = (resolve: any, cwd: string | undefined = undefined) => {

@@ -1,0 +1,93 @@
+{
+    "Cake Test File without Context": {
+        "prefix": "cake-runner",
+        "body": [
+            "import 'package:cake/cake.dart';",
+            "",
+            "void main() async {",
+            "    TestRunnerDefault('$1', [",
+            "        Test('$2',",
+            "            action: (test) => true,",
+            "            assertions: (test) => [",
+            "                Expect.isTrue(test.actual),",
+            "            ],",
+            "        ),",
+            "    ]);",
+            "}",
+            ""
+        ],
+        "description": "Generate a Cake test with a default context"
+    },
+    "Cake Test File with Context": {
+        "prefix": "cake-runner-context",
+        "body": [
+            "import 'package:cake/cake.dart';",
+            "",
+            "void main() async {",
+            "    TestRunner<$1>('$2 Tests', [",
+            "        Test('$2',",
+            "            action: (test) => true,",
+            "            assertions: (test) => [",
+            "                Expect.isTrue(test.actual),",
+            "            ],",
+            "        ),",
+            "    ],",
+            "    contextBuilder: $1.new,",
+            "    );",
+            "}",
+            "",
+            "class $1 extends Context<$2> {",
+            "   $0",
+            "",
+            "   $1();",
+            "}",
+            ""
+        ],
+        "description": "Generate a Test Runner with a Context"
+    },
+    "Cake Flutter Test File": {
+        "prefix": "cake-flutter",
+        "body": [
+            "import 'package:cake_flutter/cake_flutter.dart';",
+            "",
+            "void main() async {",
+            "    FlutterTestRunner(",
+            "        '$1', [",
+            "            Test('$2',",
+            "                action: (test) => true,",
+            "                assertions: (test) => [",
+            "                    Expect.isTrue(test.actual),",
+            "                ],",
+            "            ),",
+            "        ],",
+            "        setup: (test) async {",
+            "            await test.setApp(const $3());",
+            "        },",
+            "    );",
+            "}",
+            ""
+        ],
+        "description": "Generate a Cake Flutter Test File"
+    },
+    "Cake Group": {
+        "prefix": "cake-group",
+        "body": [
+            "Group('$1', [",
+            "    $0",
+            "]),"
+        ],
+        "description": "Generate a group of tests"
+    },
+    "Cake Test": {
+        "prefix": "cake-test",
+        "body": [
+            "Test('$1',",
+            "    action: (test) => $2,",
+            "    assertions: (test) => [",
+            "        $0",
+            "    ],",
+            "),"
+        ],
+        "description": "Generate a test"
+    }
+}
